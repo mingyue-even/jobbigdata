@@ -1,0 +1,607 @@
+﻿<!DOCTYPE>
+<html>
+
+<head>
+  <meta content="text/html; charset=utf-8" />
+  <title>职业岗位大数据服务平台</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+
+  <link href="css/common.css" rel="stylesheet" type="text/css" />
+  <link href="css/contStyle.css" rel="stylesheet" type="text/css" />
+  <!-- 引入axios -->
+  <script type="text/javascript" src="./js/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="./js/jquery.min.js"></script>
+</head>
+
+<style>
+  .el-menu-item-group ul li:nth-child(1) {
+    display: none
+  }
+
+  .topTabs .el-tabs__content {
+    padding: 0;
+  }
+
+  .menuAll {
+    padding-left: 29px !important;
+    height: 40px !important;
+    line-height: 40px !important;
+  }
+
+  /* 输入框高亮后 */
+  .head-top {
+    height: 45px !important;
+  }
+
+  /* tabX证书样式 */
+  .topTabs.el-tabs .el-tabs__item.is-active {
+    padding-right: 15px !important;
+  }
+
+  .el-form-item__content .el-tag {
+    margin: 0 5px;
+    cursor: pointer;
+  }
+
+  .el-form-item {
+    margin-bottom: 0;
+  }
+
+  .sort {
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  svg {
+    margin-left: 5px;
+  }
+
+  .year-tag-out {
+    margin: 10px 0;
+    height: 20px;
+  }
+
+  .el-input__suffix {
+    cursor: pointer;
+  }
+
+  /* 头部样式 */
+  .innerCrumbs {
+    width: 1200px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .wid45 {
+    width: 45px;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .orange {
+    color: rgb(255, 192, 0)
+  }
+
+  .el-link.is-underline:hover:after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 0;
+    bottom: 0;
+    border-bottom: 0 solid #fff;
+  }
+  .el-table__empty-block {
+    height: 77% !important;
+}
+
+/* 面包屑样式 */
+.crumbStyle{
+  display: flex;
+  align-items: center;
+}
+.margin5{
+  margin: auto 5px;
+}
+</style>
+
+<body>
+  <div id="app">
+
+    <!-- 头部 -->
+    <div class="head-top">
+      <div class="head ">
+        <h1 class="fl"><span class="blue">职业岗位</span>大数据服务平台</h1>
+        <!-- 登录前 -->
+        <a v-if="lid == null" class="login fr" :href=`${onLineAddress}`>
+          登录&nbsp;&nbsp;|&nbsp;&nbsp;LOGIN
+        </a>
+        
+        <!-- 登录后 -->
+        <span v-else class="login fr">
+          <el-dropdown size="mini" placement='bottom' @command="clickDropDown">
+            <span class="el-dropdown-link">
+              <span class="portWrap"><i class="el-icon-user"></i></span>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>退出登录</el-dropdown-item>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          {{user}}
+        </span>
+
+      </div>
+    </div>
+
+    <!-- 面包屑 -->
+    <div class="crumbs">
+      <div class="innerCrumbs">
+        <div class ='crumbStyle' style="margin:auto 5px">
+          <a target="_blank" :href="`homePage.html`"><img src="images/home.png" alt=""></a>
+          <!-- <div>
+            <span class="margin5">> </span>{{activeModel}}
+          </div> -->
+          
+          <div v-show="SearchName1 && keyword==''">
+            <span class="margin5">> </span>{{SearchName1}}
+          </div>
+          <div v-show="SearchName2 && keyword==''">
+            <span class="margin5">> </span>{{SearchName2}}
+          </div>
+          <div>
+            <span class="margin5">> </span>{{type}}
+          </div>
+          <div v-show="keyword">
+            <span class="margin5">> </span>{{keyword}}
+          </div>
+          
+          
+        </div>
+        <!-- 添加 首页 职业 岗位 专业标签 -->
+        <div>
+          <span :class="[{wid45:1},{orange:activeModel == '首页'}]" @click='switchPage("首页")'>首页</span>
+          <span :class="[{wid45:1},{orange:activeModel == '职业'}]" @click='switchPage("职业")'>职业</span>
+          <span :class="[{wid45:1},{orange:activeModel == '岗位'}]" @click='switchPage("岗位")'>岗位</span>
+          <span :class="[{wid45:1},{orange:activeModel == '专业'}]" @click='switchPage("专业")'>专业</span>
+        </div>
+      </div>
+    </div>
+
+
+
+    <!-- 内容区 -->
+    <div class="contWrap">
+      <!-- 左侧导航 开始 -->
+      <div class="contLef">
+        <el-menu ref="menu" @open="open" @close="open" class="el-menu-vertical-demo" background-color="#3a3f46"
+          text-color="#fff" active-text-color="#ffc000" :unique-opened="true" :default-active="activeMenu"
+          @select="selectNav" :collapse-transition='true'>
+          <el-menu-item index='' class="menuAll">全部</el-menu-item>
+          <el-submenu :index="item.code" v-for='(item,index) in cateArr' :key='item.code'>
+            <template slot="title">{{item.name}}</template>
+            <el-menu-item-group>
+              <el-menu-item :index="item.code">xxx</el-menu-item>
+              <el-menu-item class="menuItem" :index='i.code' v-for='(i,idx) in item.child' :key='idx'>{{i.name}}
+              </el-menu-item>
+            </el-menu-item-group>
+          </el-submenu>
+        </el-menu>
+      </div>
+      <!-- 左侧导航 结束 -->
+
+
+      <!-- 右侧内容 开始 -->
+      <div class="contRig">
+
+        <!-- 类型和年份筛选 -->
+        <div>
+          <el-form label-position="right" label-width="75">
+            <el-form-item label="类型：">
+              <el-tag size="mini" @click="type='职业', getSearch(1)" :effect="'职业'==type?'dark':'light'">职业
+              </el-tag>
+              <el-tag size="mini" @click="type='工种', getSearch(1)" :effect="'工种'==type?'dark':'light'">工种
+              </el-tag>
+            </el-form-item>
+
+
+            <el-form-item label="年份：">
+              <div class="year-tag-out">
+                <el-tag size="mini" v-for="(y,yi) in selectYears" :key="yi" @click="year=y,  getSearch()"
+                  :effect="y==year?'dark':'light'">{{y}}</el-tag>
+              </div>
+            </el-form-item>
+
+
+            <!-- 排序 -->
+            <el-form-item label="排序：">
+
+              <div class="sort">
+                <span @click="order= (order+1) % 2,getSearch()">发布时间</span>
+
+                <!-- 升序图标 -->
+                <svg @click="order= (order+1) % 2,getSearch()" v-if="order==0" t="1608173755219" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                  xmlns="http://www.w3.org/2000/svg" p-id="1198" width="15" height="15">
+                  <path
+                    d="M454.99 152.17l0.01 0.792v767.895C455 946.894 433.894 968 407.857 968c-26.036 0-47.142-21.106-47.142-47.143l-0.001-440.517-231.48-6.372c-26.119-0.626-38.81-32.014-20.829-50.625l0.554-0.56L404.114 131.67c18.704-18.447 50.247-5.512 50.876 20.5z m495.72 638.78l0.494 0.004c16.285 0.264 29.405 13.548 29.405 29.896 0 16.513-13.387 29.9-29.9 29.9H548l-0.494-0.004c-16.286-0.264-29.406-13.548-29.406-29.896 0-16.513 13.387-29.9 29.9-29.9h402.71z m-82.8-195.4l0.494 0.003c16.285 0.264 29.405 13.548 29.405 29.896 0 16.514-13.387 29.9-29.9 29.9H548l-0.494-0.004c-16.286-0.264-29.406-13.548-29.406-29.896 0-16.513 13.387-29.9 29.9-29.9h319.91z m-82.8-195.5l0.494 0.003c16.285 0.264 29.405 13.548 29.405 29.896 0 16.513-13.387 29.9-29.9 29.9H548l-0.494-0.004c-16.286-0.264-29.406-13.548-29.406-29.896 0-16.513 13.387-29.9 29.9-29.9h237.11z m-87.4-195.5l0.494 0.003c16.285 0.264 29.405 13.548 29.405 29.896 0 16.513-13.387 29.9-29.9 29.9H548l-0.494-0.004c-16.286-0.264-29.406-13.548-29.406-29.896 0-16.513 13.387-29.9 29.9-29.9h149.71z"
+                    fill="#1296db" p-id="1199"></path>
+                </svg>
+
+                <!-- 降序图标 -->
+                <svg @click="order= (order+1) % 2,getSearch()" v-if="order==1" t="1608173706155" class="icon" viewBox="0 0 1024 1024" version="1.1"
+                  xmlns="http://www.w3.org/2000/svg" p-id="3182" width="15" height="15">
+                  <path
+                    d="M377.857 105C403.894 105 425 126.106 425 152.143v767.895l-0.01 0.793c-0.629 26.01-32.172 38.946-50.876 20.499L78.959 650.217l-0.554-0.56c-17.982-18.611-5.29-49.999 20.829-50.625l231.48-6.372V152.143c0-26.037 21.107-47.143 47.143-47.143zM698 790.1c16.513 0 29.9 13.387 29.9 29.9 0 16.348-13.12 29.632-29.406 29.896l-0.494 0.004H548c-16.513 0-29.9-13.387-29.9-29.9 0-16.348 13.12-29.632 29.406-29.896l0.494-0.004h150z m87-195c16.513 0 29.9 13.387 29.9 29.9 0 16.348-13.12 29.632-29.406 29.896l-0.494 0.004H548c-16.513 0-29.9-13.387-29.9-29.9 0-16.348 13.12-29.632 29.406-29.896l0.494-0.004h237z m83-196c16.513 0 29.9 13.387 29.9 29.9 0 16.348-13.12 29.632-29.406 29.896l-0.494 0.004H548c-16.513 0-29.9-13.387-29.9-29.9 0-16.348 13.12-29.632 29.406-29.896l0.494-0.004h320z m83-195c16.513 0 29.9 13.387 29.9 29.9 0 16.348-13.12 29.632-29.406 29.896l-0.494 0.004H548c-16.513 0-29.9-13.387-29.9-29.9 0-16.348 13.12-29.632 29.406-29.896l0.494-0.004h403z"
+                    fill="#1296db" p-id="3183"></path>
+                </svg>
+              </div>
+            </el-form-item>
+
+          </el-form>
+
+        </div>
+
+
+        <el-input @change="clickInput(keyword)" class="searchSmall" size="mini" placeholder="请输入职业/工种/岗位/专业/标准/技能搜索"
+          suffix-icon="el-icon-search" v-model.trim="keyword">
+        </el-input>
+
+
+        <!-- 共用 -->
+        <div style="padding: 0 20px 8px">
+
+          <!-- 表格 -->
+          <el-table :data="tableData" style="width: 100%" v-loading="loading" element-loading-text="数据加载中">
+
+            <el-table-column label="职业名称" width="170">
+              <template slot-scope="scope">
+                <el-link :href="`careerDetail.html?id=${scope.row.Id}`" target="_blank">
+                  {{scope.row.Name}}
+                </el-link>
+
+              </template>
+            </el-table-column>
+            <el-table-column prop="" label="类型" width="80">
+              <template slot-scope="scope">
+                <span>{{scope.row.Type}}</span>
+              </template>
+            </el-table-column>
+            <el-table-column prop="" label="来源" width="290">
+              <template slot-scope="scope">
+                {{scope.row.Origin}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="date" width="110" label="发布日期">
+
+
+              <template slot-scope="scope">
+                {{scope.row.PublishDate.split('T')[0]}}
+              </template>
+            </el-table-column>
+            <el-table-column prop="" label="机构" width="200">
+              <template slot-scope="scope">
+                {{scope.row.Organ}}
+              </template>
+            </el-table-column>
+          </el-table>
+          <!-- 分页 -->
+          <div class="clearfix">
+            <el-pagination v-if="total != 0" class="fr" background layout="prev, pager, next, total" :total="total" :page-size="10"
+              :current-page.sync='pageIndex' @current-change='pageChange'>
+            </el-pagination>
+          </div>
+        </div>
+      </div>
+
+      <!-- 右侧内容 结束 -->
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="footer">
+      <!-- <ul>
+        <li>
+          <p>软件系统版权所有：同方知网（北京）技术有限公司</p>
+          <p>
+            <a href="">关于我们</a>
+            <a href="">联系我们</a>
+            <a href="">帮助中心</a>
+          </p>
+          <p class="color999">©1999-2020 同方知网（北京）技术有限公司 版权所有</p>
+        </li>
+        <li>
+          关注我们：
+          <img src="images/weixin.png" alt="">
+          <img src="images/weibo.png" alt="">
+        </li>
+      </ul> -->
+    
+      <div class="foot-bot clearfix">
+        <div class="t">
+            <img src="//piccache.cnki.net/kdn/index/kns8/nimages/foot-logo.png" alt="中国知网">
+            <p class="mid">
+                <span>
+                    <a target="_blank" href="//www.cnki.net/gycnki/gycnki.htm">关于我们</a>
+                    <a target="_blank" href="//www.cnki.net/other/gonggao/gongsirongyu.html">CNKI 荣誉</a>
+                    <a target="_blank" href="//www.cnki.net/other/gonggao/bqsm.htm">版权公告</a>
+                    <a target="_blank" href="//service.cnki.net/">客服中心</a>
+                    <a target="_blank" href="//help.cnki.net/">在线咨询</a>
+                    <a target="_blank" href="//help.cnki.net/Live800_2_2.aspx">用户建议</a>
+                    <a target="_blank" href="//piccache.cnki.net/index/CNKIRecruit/index.html">知网招聘</a>
+                    <a target="_blank" href="//a.cnki.net/">知网推广</a>
+                </span>
+                <span id="copyright">© 1998-2021 中国知网（CNKI）</span>
+            </p>
+            
+        </div>
+        <div class="b">
+            <span>京 ICP 证 040431 号<a target="_blank" href="//piccache.cnki.net/index/images/gb/271.jpg">网络出版服务许可证 (总)网出证(京)字第 271 号</a><a target="_blank" href="//piccache.cnki.net/index/images/gb/170001.jpg">出版物经营许可证</a> 京公网安备 11010802020460 号</span>
+            <span>《中国学术期刊（光盘版）》电子杂志社有限公司</span>
+            <span>KDN 平台基础技术由 KBASE 11.0 提供.</span>
+        </div>
+    </div>
+    </div>
+
+  </div>
+
+</body>
+
+
+<script>
+  const URL = 'http://10.120.147.78'
+  // const URL = 'https://zygw.cnki.net'
+  let v = new Vue({
+    el: '#app',
+    data() {
+      return {
+        activeModel: '职业',
+        code: '',
+        year: '全部',
+        type: '职业',
+        order: 0,
+        keyword: '',
+        pageIndex: 1,
+        pageSize: 10,
+        total: 0,
+        tableData: [],
+        activeMenu: '',
+        cateArr: [],//职业导航树
+        SearchName1: '', //面包屑
+        SearchName2: '', //面包屑
+        loading: false,
+        lid: '',
+        user: '',
+        show: false,
+        onLineAddress: 'userLogin.html',
+        // onLineAddress: 'https://login.cnki.net/login/?platform=kns&ForceReLogin=1&ReturnURL='+URL+'/jbd/homePage.html'
+      }
+    },
+
+    updated() {
+      this.SearchName2 = $('.el-menu-item.menuItem.is-active')[0] ? $('.el-menu-item.menuItem.is-active')[0].textContent : ''
+      this.SearchName1 = $('.el-submenu.is-active .el-submenu__title')[0] ? $('.el-submenu.is-active .el-submenu__title')[0].innerText : ''
+    },
+    mounted() {
+      let that = this
+      this.keyword = this.getUrlParam('keyword')
+      this.getUserInfo()
+      // 获取职业导航树
+      this.getOccupationTree()
+      // 获取职业列表
+      this.getSearch()
+      this.activeMenu = this.code
+      setTimeout(() => {
+        this.SearchName1 = $('.el-submenu.is-active .el-submenu__title')[0] ? $('.el-submenu.is-active .el-submenu__title')[0].innerText : ''
+        this.SearchName2 = $('.el-menu-item.menuItem.is-active')[0] ? $('.el-menu-item.menuItem.is-active')[0].textContent : ''
+      }, 1000)
+      
+     // 添加搜索图标搜索点击
+     $("i.el-input__icon.el-icon-search").click(()=>{
+        that.getSearch(1)
+      })
+
+    },
+
+    created() {
+      window.v = this
+    },
+
+    computed: {
+      selectYears() {
+        return ['全部'].concat(Array(6).fill(0).map((e, i) => new Date().getFullYear() - i -1))
+      },
+    },
+
+    methods: {
+       /* 获取cookies的值 */
+       getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+
+       //获取用户信息
+       getUserInfo() {
+        let that = this
+        axios.get(URL+'/jobbigdata/api/Common/GetUserInfo', {
+          headers: { 'lid': that.lid }
+        })
+          .then(function (res) {
+            if (res.status == 200) {
+              that.user = res.data
+            }
+          })
+          .catch(function (error) {
+            that.$message({
+              showClose:true,
+              message:'请登录后访问',
+              type:'warning'
+            })
+            window.open(that.onLineAddress,'_self')
+
+          });
+      },
+
+
+
+      // 切换页面
+      switchPage(v){
+        if(v == '专业'){
+          window.open('majorNavPage.html','_blank')
+        }else if(v == '首页'){
+          window.open('homePage.html','_blank')
+        }else if(v == '岗位'){
+          window.open('postNavPage.html','_blank')
+        }
+
+      },
+      // 输入框输入关键字
+      clickInput(keyword) {
+        this.code = ''
+        this.$refs.menu.activeIndex = this.code
+        this.activeMenu = this.code
+        this.keyword = keyword
+        this.getSearch()
+      },
+      // 获取职业列表 
+      getSearch(page) {
+        let that = this
+        that.loading = true
+        if(page){
+          this.pageIndex = page
+        }else{
+          this.pageIndex = 1
+        }
+
+        let trueYear = ''
+        if(that.year == '全部'){
+          trueYear = ''
+        }else{
+          trueYear = that.year
+        }
+        $.ajax({
+          url: URL + '/jobbigdata/api/Occupation/GetOccupationList',
+          data: {
+            code: that.code,
+            type: that.type,
+            year: trueYear,
+            keyword: that.keyword,
+            order: that.order,
+            pageIndex: page || that.pageIndex,
+            pageSize: 10
+          },
+          success: function (res) {
+            that.loading = false
+            if (res.Code == 200) {
+              that.tableData = res.Data
+              that.total = res.Total
+            }
+          }
+        })
+      },
+
+      // 获取职业导航树
+      getOccupationTree() {
+        let that = this
+        $.ajax({
+          url: URL + '/jobbigdata/api/Common/GetOccupationTree',
+          success: function (res) {
+            if (res.Code == 200) {
+              that.cateArr = res.Data
+            }
+          }
+        })
+      },
+
+      changeUrl(url) {
+        if (!!(window.history && history.pushState)) {
+          history.replaceState(null, null, url + '&user=' + this.user)
+        }
+      },
+      //改变地址栏数据
+      judgeAddress() {
+        let url = location.href.split('?')[0] + '?code=' + this.code +  '&type=' + this.type +  '&keyword=' + this.keyword
+        this.changeUrl(url)
+      },
+
+
+      /* 展开一级导航 */
+      open(index) {
+        this.keyword = ''
+        this.code = index
+        this.$refs.menu.activeIndex = index
+        this.getSearch(1)
+      },
+
+      /* 左侧选中的二级导航 */
+      selectNav(index) {
+        this.keyword = ''
+        this.code = index
+        this.$refs.menu.activeIndex = index
+        this.getSearch(1)
+      },
+
+      /* 切换页码 */
+      pageChange(page) {
+        this.getSearch(page)
+      },
+
+
+      /* 获取cookies的值 */
+      getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+
+      /* 点击下拉按钮退出 */
+      clickDropDown() {
+        let that = this
+        this.lid = this.getCookie('LID')
+        axios.defaults.headers.post['lid'] = that.lid
+        axios.post(URL + '/jobbigdata/api/Common/LogOut')
+          .then(function (res) {
+            that.$message({
+              showClose: true,
+              message: '退出成功',
+              type: 'success',
+            })
+            window.open(that.onLineAddress, '_self')
+            // window.open('userLogin.html', '_self')
+          })
+          .catch(function (error) {
+            window.open(that.onLineAddress, '_self')
+            // window.open('userLogin.html', '_self')
+          });
+      },
+
+      /* 获取地址栏的参数 */
+      getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", 'i'); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg); //匹配目标参数
+        if (r != null) return decodeURIComponent(r[2]);
+        return null; //返回参数值
+      },
+
+      }
+
+  })
+</script>
+
+</html>
+
+<!--------------- Author: 王祝君 Time：20200923 --------------->

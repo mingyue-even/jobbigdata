@@ -1,0 +1,1044 @@
+﻿<!DOCTYPE>
+<html>
+
+<head>
+  <meta content="text/html; charset=utf-8" />
+  <title>职业岗位大数据服务平台</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+  <!-- css -->
+  <link href="css/common.css" rel="stylesheet" type="text/css" />
+  <link href="css/detailStyle.css" rel="stylesheet" type="text/css" />
+  <!-- js -->
+  <script src="js/echarts.min.js"></script>
+  <script src="js/chart2.js"></script>
+  <script src="js/echart3.min.js"></script>
+
+
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="js/jquery.min.js"></script>
+  <script src="js/echart3.js"></script>
+  <script src="js/echarts-wordcloud.js"></script>
+
+  <script src="js/d3.min.js"></script>
+</head>
+
+<style>
+  .topTabs .el-tabs__content {
+    padding: 0;
+  }
+
+  .loginSuccess {
+    margin: 10px 0 0 60px;
+  }
+
+  .head-top {
+    height: 45px !important;
+  }
+
+  .topTabs.el-tabs .el-tabs__item.is-active {
+    height: 43px;
+    line-height: 43px
+  }
+
+  .dtLef {
+    width: 100%;
+
+  }
+
+  .detailTop {
+    margin-bottom: 0;
+  }
+
+  .title {
+    border-bottom-width: 0;
+  }
+
+  .dtLef,
+  .dtRig {
+    border-radius: 0;
+    padding-bottom: 0;
+  }
+
+  /* .el-tabs__active-bar */
+
+  .detailBot {
+    width: 1160px;
+    display: inline-block;
+    padding: 10px 20px;
+    border-radius: 0;
+  }
+
+  #doudou {
+    width: 800px;
+    height: auto;
+  }
+
+  div[role=tabpanel] .chart {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: auto;
+    width: 100%;
+    min-height: 500px;
+  }
+
+  /* 分页居右 */
+  .el-pagination {
+    float: right;
+  }
+  .dis_flex {
+    display: flex;
+    height: 100%;
+    width: 100%;
+    justify-content: center;
+    align-items: center;
+    color: #909399;
+  }
+</style>
+
+<body>
+  <div id="app">
+    <!-- 头部 -->
+    <div class="head-top">
+      <div class="head">
+        <h1 class="fl"><span class="blue">职业岗位</span>大数据服务平台</h1>
+
+        <!-- 登陆前 -->
+        <a v-if="user == ''" class="login fr" :href=`${onLineAddress}`>
+          登录&nbsp;&nbsp;|&nbsp;&nbsp;LOGIN
+        </a>
+        
+        <!-- 登录后 -->
+        <span v-else class="login fr">
+          <el-dropdown size="mini" placement='bottom' @command="clickDropDown">
+            <span class="el-dropdown-link">
+              <span class="portWrap"><i class="el-icon-user"></i></span>
+            </span>
+            <el-dropdown-menu slot="dropdown">
+              <el-dropdown-item>退出登录</el-dropdown-item>
+              </el-dropdown-item>
+            </el-dropdown-menu>
+          </el-dropdown>
+          {{user}}
+        </span>
+        
+      </div>
+    </div>
+
+    <!-- 面包屑 -->
+    <div class="crumbs">
+      <div style="width:1200px;margin: auto">
+        <a style="margin:auto 0" target="_blank" :href="`homePage.html?user=${user}`"><img src="images/home.png"
+            alt=""></a>
+       <span>></span> 岗位
+      <span>></span> 典型岗位
+      <span>></span> {{name}}
+      </div>
+    </div>
+
+    <!-- 内容区 -->
+    <div class="contWrap">
+      <div class="detailTop">
+        <!-- 岗位信息  开始 -->
+        <div class="dtLef">
+          <div class="clearfix title">
+            <h3 class="fl">{{name}}</h3>
+          </div>
+
+        </div>
+        <!-- 岗位信息  结束 -->
+
+
+        <!-- 相关标准  结束 -->
+      </div>
+
+      <div class="detailBot">
+
+        <el-tabs v-model="tab.tab1">
+          <el-tab-pane label="全景脉络图" name="全景脉络图">
+            <el-tabs v-model="tab.tab3">
+              <el-tab-pane label="分类关联" name="分类关联">
+                <div id="sort_main" style="width: 1160px;height:1000px;"></div>
+              </el-tab-pane>
+            </el-tabs>
+          </el-tab-pane>
+          <el-tab-pane label="岗位人才画像" name="岗位人才画像">
+
+            <el-tabs v-model="tab.tab2">
+              <el-tab-pane label="招聘岗位分类" name="招聘岗位分类" v-loading="loading.doudou">
+                <!-- 痘痘图 -->
+                <div class="chart">
+                  <div id="doudou"><div v-if="!dd_data.length" class="dis_flex">暂无数据</div></div>
+                </div>
+              </el-tab-pane>
+              <el-tab-pane label="工作年限分布" name="工作年限分布">
+                <div id="jobyear_main" style="width: 1160px;height:600px;"></div>
+              </el-tab-pane>
+              <el-tab-pane label="地域城市分布" name="地域城市分布">
+                <div id="map_main" style="width: 1160px;height:600px;"></div>
+              </el-tab-pane>
+              <el-tab-pane label="学历背景分布" name="学历背景分布">
+                <div id="edu_main" style="width: 1160px;height:600px;"></div>
+              </el-tab-pane>
+              <el-tab-pane label="薪资待遇分布" name="薪资待遇分布">
+                <div id="salary_main" style="width: 1160px;height:600px;"></div>
+              </el-tab-pane>
+              <el-tab-pane label="招聘单位分布" name="招聘单位分布">
+                <div id="com_main" style="width: 1160px;height:600px;"></div>
+              </el-tab-pane>
+            </el-tabs>
+
+          </el-tab-pane>
+          <el-tab-pane label="岗位技能图谱" name="岗位技能图谱">
+            <div id="ciyun" style="width: 1160px;height:600px;">
+            </div>
+            <div style="width: 1160px;height:600px; position: absolute; left: 0; top: 0;" v-if="!cyData.length">
+              <div class="dis_flex">暂无数据</div>
+            </div>
+          </el-tab-pane>
+        </el-tabs>
+
+      </div>
+    </div>
+
+    <!-- 版权信息 -->
+    <div class="footer">
+      <!-- <ul>
+        <li>
+          <p>软件系统版权所有：同方知网（北京）技术有限公司</p>
+          <p>
+            <a href="">关于我们</a>
+            <a href="">联系我们</a>
+            <a href="">帮助中心</a>
+          </p>
+          <p class="color999">©1999-2020 同方知网（北京）技术有限公司 版权所有</p>
+        </li>
+        <li>
+          关注我们：
+          <img src="images/weixin.png" alt="">
+          <img src="images/weibo.png" alt="">
+        </li>
+      </ul> -->
+      <div class="foot-bot clearfix">
+        <div class="t">
+            <img src="//piccache.cnki.net/kdn/index/kns8/nimages/foot-logo.png" alt="中国知网">
+            <p class="mid">
+                <span>
+                    <a target="_blank" href="//www.cnki.net/gycnki/gycnki.htm">关于我们</a>
+                    <a target="_blank" href="//www.cnki.net/other/gonggao/gongsirongyu.html">CNKI 荣誉</a>
+                    <a target="_blank" href="//www.cnki.net/other/gonggao/bqsm.htm">版权公告</a>
+                    <a target="_blank" href="//service.cnki.net/">客服中心</a>
+                    <a target="_blank" href="//help.cnki.net/">在线咨询</a>
+                    <a target="_blank" href="//help.cnki.net/Live800_2_2.aspx">用户建议</a>
+                    <a target="_blank" href="//piccache.cnki.net/index/CNKIRecruit/index.html">知网招聘</a>
+                    <a target="_blank" href="//a.cnki.net/">知网推广</a>
+                </span>
+                <span id="copyright">© 1998-2021 中国知网（CNKI）</span>
+            </p>
+            
+        </div>
+        <div class="b">
+            <span>京 ICP 证 040431 号<a target="_blank" href="//piccache.cnki.net/index/images/gb/271.jpg">网络出版服务许可证 (总)网出证(京)字第 271 号</a><a target="_blank" href="//piccache.cnki.net/index/images/gb/170001.jpg">出版物经营许可证</a> 京公网安备 11010802020460 号</span>
+            <span>《中国学术期刊（光盘版）》电子杂志社有限公司</span>
+            <span>KDN 平台基础技术由 KBASE 11.0 提供.</span>
+        </div>
+    </div>
+
+    </div>
+
+  </div>
+
+</body>
+
+<script src="./js/mapData.js"></script>
+<script>
+  const URL = 'http://10.120.147.78'
+  //const URL = 'https://zygw.cnki.net'
+
+  var v = new Vue({
+    el: '#app',
+    data() {
+      return {
+        tab: {
+          tab1: ''
+        },
+        loading: {
+          doudou: false,
+          occuLoading: false
+        },
+        total: 0,
+        pageIndex: 1,
+        pageSize: 10,
+        code: '',
+        inputSearch: '',
+        id: "",
+        user: '',
+        lid: '',
+        show: false, //头部搜索框样式
+        name: '',
+        flag: false,
+        onLineAddress: 'userLogin.html',
+        cyData: [],
+        dd_data: []
+        // onLineAddress: 'https://login.cnki.net/login/?platform=kns&ForceReLogin=1&ReturnURL='+URL+'/jbd/homePage.html'
+
+      }
+    },
+
+    mounted() {
+      this.tab.tab1 = '全景脉络图'
+      this.id = this.getUrlParam('id')
+      this.code = this.getUrlParam('code')
+      this.name = this.getUrlParam('name')
+      this.getUserInfo()
+    },
+
+    created() {
+      window.v = this
+    },
+
+    watch: {
+      "tab.tab1": function (v) {
+        if (v == '岗位人才画像') {
+          if (this.tab.tab2 == 0) {
+            this.tab.tab2 = '招聘岗位分类'
+          }
+        } else if (v == '岗位技能图谱') {
+          this.drawCiyun()
+        } else if (v == '全景脉络图') {
+          if (this.tab.tab3 == 0) {
+            this.tab.tab3 = '分类关联'
+          }
+        }
+      },
+      "tab.tab2": function (v) {
+        if (v == '招聘岗位分类') {
+          this.draw_doudou()
+        } else if (v == '学历背景分布') {
+          this.draw_edu()
+        } else if (v == '招聘单位分布') {
+          this.draw_company()
+        } else if (v == '地域城市分布') {
+          this.draw_map()
+        } else if (v == '工作年限分布') {
+          this.draw_jobyear()
+        } else if (v == '薪资待遇分布') {
+          this.draw_salary()
+        }
+      },
+      "tab.tab3": function (v) {
+        if (v == '分类关联') {
+          this.draw_sort()
+        }
+      }
+    },
+    methods: {
+       /* 获取cookies的值 */
+       getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+
+       //获取用户信息
+       getUserInfo() {
+        let that = this
+        axios.get(URL+'/jobbigdata/api/Common/GetUserInfo', {
+          headers: { 'lid': that.lid }
+        })
+          .then(function (res) {
+            if (res.status == 200) {
+              that.user = res.data
+            }
+          })
+          .catch(function (error) {
+            that.$message({
+              showClose:true,
+              message:'请登录后访问',
+              type:'warning'
+            })
+            // window.open(that.onLineAddress,'_self')
+
+          });
+      },
+
+     
+
+      drawCiyun() {
+        let that = this
+        $.ajax({
+          url: `${URL}/jobbigdata/api/Station/GetWordCloud?keyword=${this.name}`,
+          success: function (res) {
+            if (res.Code == 200) {
+              let data = res.Data || []
+              that.cyData = data
+              lists = data.map(item => {
+                return {
+                  name: item.keywords,
+                  value: item.N
+                }
+              })
+              that.echartsCloud(lists); //初始化echarts图
+            } else {
+              alert('词云获取失败')
+            }
+          }
+        })
+      },
+      echartsCloud(lists) {
+        const chart = echarts3.init(document.getElementById('ciyun'));
+        var option = {
+          series: [{
+            type: 'wordCloud', //类别
+            gridSize: 8, //散开的程度，越大词之间的间隔越大
+            sizeRange: [22, 52], //词字体范围
+            rotationRange: [-45, 45], //词倾斜角度 ，[0,0]为水平  
+            width: '100%', //渲染图层占容器的宽高，也就是大小
+            height: '100%',
+            drawOutOfBound: true, //超出画布后是否显示   可以解决少词或词不全问题
+            textStyle: {
+              normal: {
+                color: function () {
+                  return 'rgb(' +
+                    Math.round(Math.random() * 255) +
+                    ', ' + Math.round(Math.random() * 255) +
+                    ', ' + Math.round(Math.random() * 255) + ')'
+                }
+              }
+            },
+            left: 'center', //位置
+            top: 'center',
+            right: null,
+            bottom: null,
+            data: lists //数据
+          }],
+        };
+        chart.setOption(option);
+      },
+      // 绘制分类关联树形图
+      draw_sort() {
+        var that = this
+        let myChart = echarts.init(document.getElementById('sort_main'));
+        myChart.showLoading();
+        let data = []
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetStationTree?code=${that.code}&name=${that.name}`,
+          success: function (result) {
+            myChart.hideLoading()
+            if (result.Code == 200) {
+              data = that.changeTree([result.Data])[0];
+              option = {
+                tooltip: {
+                  trigger: 'item',
+                  triggerOn: 'mousemove'
+                },
+                series: [{
+                  type: 'tree',
+                  data: [data],
+                  layout: 'orthogonal', //orthogonal非环状 radial环状
+                  orient: 'TB', //LR从左到右 RL从右到左 TB从上到下 BT从下到上
+                  top: '5%',
+                  bottom: '30%',
+                  left: '5%',
+                  right: '5%',
+
+                  symbolSize: 20,
+                  symbol: 'emptyCircle',
+
+                  label: {
+                    position: 'top',
+                    rotate:0,
+                    verticalAlign: 'middle',
+                    rotate: 0,
+                    align: 'center'
+                  },
+
+                  leaves: {
+                    label: {
+                      position: 'bottom',
+                      verticalAlign: 'middle',
+                      rotate: -90,
+                      align: 'left'
+                    }
+                  },
+                  lineStyle: {
+                    color: '#cbdae9'
+                  },
+
+                  expandAndCollapse: true,
+                  initialTreeDepth: 2, //全部展开
+
+                  animationDuration: 550,
+                  animationDurationUpdate: 750
+                }]
+              };
+              // 使用刚指定的配置项和数据显示图表。
+              myChart.setOption(option);
+            }
+          }
+        })
+      },
+      changeTree(arr) {
+        var newArr = arr.map(item => {
+          if (item.Grade == 1) {
+            var itemStyle = {
+              color: '#efb9a5',
+              borderWidth: 0
+            }
+          } else if (item.Grade == 2) {
+            var itemStyle = {
+              color: '#d9fbb2',
+              borderWidth: 0
+            }
+          } else if (item.Grade == 3) {
+            var itemStyle = {
+              color: '#a5efd5',
+              borderWidth: 0
+            }
+          } else if (item.Grade == 4) {
+            var itemStyle = {
+              color: '#b2bdfb',
+              borderWidth: 0
+            }
+          } else if (item.Grade == 5) {
+            var itemStyle = {
+              color: '#efa5ec',
+              borderWidth: 0
+            }
+          } else if (item.Grade == 6) {
+            var itemStyle = {
+              color: '#f1ffb7',
+              borderWidth: 0
+            }
+          }
+          if (item.child) {
+            return item = {
+              name: item.Name,
+              itemStyle: itemStyle,
+              children: this.changeTree(item.child),
+              // value: 1
+            }
+          } else {
+            return item = {
+              name: item.Name,
+              itemStyle: itemStyle,
+              // value: 1
+            }
+          }
+        })
+        return newArr
+      },
+
+      // 绘制地图
+      draw_map() {
+        let that = this
+
+        // 基于准备好的dom，初始化echarts实例
+
+        var chart = echarts.init(document.getElementById('map_main')); //初始化
+
+        var data = []
+        var min = 0
+        var max = 0
+        chart.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetWorkArea?code=${that.code}&name=${that.name}`,
+          success: function (result) {
+            chart.hideLoading()
+            if (result.Code == 200) {
+              data = json_array(result.Data);
+              showMap()
+            }
+          }
+        });
+
+        //json转js数组
+        function json_array(data) {
+          var len = eval(data).length;
+          var arr = [];
+          for (var i = 0; i < len; i++) {
+            if (i == 0) {
+              min = data[i].N
+            } else if (i == len - 1) {
+              max = data[i].N
+            }
+            arr[i] = []; //js中二维数组必须进行重复的声明，否则会undefind
+            arr[i]['name'] = data[i].workarea;
+            arr[i]['value'] = data[i].N;
+          }
+          return arr;
+        }
+
+        function convertData(data) {
+          var res = [];
+          for (var i = 0; i < data.length; i++) {
+            var geoCoord = geoCoordMap[data[i].name];
+            if (geoCoord) {
+              res.push({
+                name: data[i].name,
+                value: geoCoord.concat(data[i].value)
+              });
+            }
+          }
+          return res;
+        };
+
+        //渲染
+        function showMap() {
+          echarts.registerMap('china', chinaJson);
+          option = {
+            tooltip: {
+              show: true,
+              formatter: function (param) {
+                return "<span style='display: inline-block; margin-right: 5px; border-radius: 10px; width: 9px; height: 9px; background-color:" +
+                  param.color + "''></span>" + " " + param.name + "：" + param.value[2];
+              }
+            },
+            visualMap: {
+              min: min,
+              max: max,
+              realtime: false,
+              calculable: true,
+              inRange: {
+                color: ['lightskyblue', 'yellow', 'orangered']
+              }
+            },
+            geo: {
+              map: 'china',
+              roam: false,
+              silent: true,
+              label: {
+                normal: {
+                  show: false, //关闭省份名展示
+                },
+                emphasis: {
+                  show: false
+                }
+              },
+              itemStyle: {
+                normal: {
+                  areaColor: "#0d0059",
+                  borderColor: "#389dff",
+                  borderWidth: 1, //设置外层边框
+                  shadowBlur: 5,
+                  shadowOffsetY: 8,
+                  shadowOffsetX: 0,
+                  shadowColor: "#01012a"
+                }
+              }
+            },
+            series: [{
+              type: 'scatter',
+              coordinateSystem: 'geo',
+              data: convertData(data),
+              symbol: 'circle',
+              symbolSize: function (val) {
+                return (val[2] + 5000) / 1000
+              },
+            }, ]
+          };
+
+          chart.setOption(option);
+        }
+      },
+      // 绘制招聘单位
+      draw_company() {
+        let that = this
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('com_main'));
+        myChart.showLoading()
+        var data = []
+        var companys = []
+        var colors = ['#37a2da', '#32c5e9', '#67e0e3', '#9fe6b8', '#ffdb5c', '#ff9f7f', '#fb7293', '#e062ae',
+          '#e690d1', '#e7bcf3', '#9d96f5', '#8378ea', '#96bfff'
+        ]
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetCompany?code=${that.code}&name=${that.name}`,
+          success: function (res) {
+            myChart.hideLoading()
+            if (res.Code == 200) {
+              var list = res.Data.reverse() ||[]
+              companys = list.map(item => item.company_name)
+              data = list.map((item, idx) => {
+                let color = colors[idx % 13]
+                return {
+                  value: item.N,
+                  itemStyle: {
+                    color: color
+                  }
+                }
+              })
+              option = {
+                grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                tooltip: {
+                  formatter: function (param) {
+                    return param.name + "<br>" + param.marker + "：" + param.value;
+                  }
+                },
+                xAxis: {
+                  type: 'value',
+                  boundaryGap: [0, 0.01],
+                },
+                yAxis: {
+                  type: 'category',
+                  data: companys
+                },
+                series: [{
+                  type: 'bar',
+                  data: data,
+                  itemStyle: {
+                    barBorderRadius: 5,
+                  }
+                }]
+              };
+              // 使用刚指定的配置项和数据显示图表。
+              myChart.setOption(option);
+            }
+          }
+        })
+      },
+      // 绘制工作年限
+      draw_jobyear() {
+        let that = this
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('jobyear_main'));
+        myChart.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetWorkYear?code=${that.code}&name=${that.name}`,
+          success: function (res) {
+            myChart.hideLoading()
+            var newData = res.Data.map(e => {
+              return {
+                data: [e.N],
+                type: 'bar',
+                name: e.workyear,
+                itemStyle: {
+                  barBorderRadius: 5
+                }
+              }
+            })
+            var option = {
+              xAxis: {
+                type: 'category',
+                data: [that.name]
+              },
+              yAxis: {
+                type: 'value',
+                show: true
+              },
+              legend: {
+                type: 'scroll',
+                show: true,
+                bottom: 0
+              },
+              tooltip: {
+                show: true
+              },
+              series: newData
+            }
+            myChart.setOption(option)
+          }
+        })
+      },
+      // 绘制学历背景
+      draw_edu() {
+        let that = this
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('edu_main'));
+        myChart.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetEducation?code=${that.code}&name=${that.name}`,
+          success: function (res) {
+            myChart.hideLoading()
+            if (res.Code == 200) {
+              var newData = res.Data.map(e => {
+                return {
+                  data: [e.N],
+                  type: 'bar',
+                  name: e.education,
+                  itemStyle: {
+                    barBorderRadius: 5
+                  }
+                }
+              })
+              var option = {
+                xAxis: {
+                  type: 'category',
+                  data: [that.name]
+                },
+                yAxis: {
+                  type: 'value',
+                  show: true
+                },
+                legend: {
+                  type: 'scroll',
+                  show: true,
+                  bottom: 0
+                },
+                tooltip: {
+                  show: true
+                },
+                series: newData
+              }
+              myChart.setOption(option)
+            }
+          }
+        })
+      },
+      // 绘制薪资待遇
+      draw_salary() {
+        let that = this
+        // 基于准备好的dom，初始化echarts实例
+        var myChart = echarts.init(document.getElementById('salary_main'));
+        var salar = ['5千以下', '5千-1万', '1万-1.5万', '1.5万-2万', '2万-3万', '3万以上']
+        myChart.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetSalary?code=${that.code}&name=${that.name}`,
+          success: function (res) {
+            myChart.hideLoading()
+            if (res.Code == 200) {
+              var newData = res.Data.map(e => {
+                return {
+                  data: [e.N],
+                  type: 'bar',
+                  name: e.salary,
+                  itemStyle: {
+                    barBorderRadius: 5
+                  }
+                }
+              })
+              var option = {
+                xAxis: {
+                  type: 'category',
+                  data: [that.name]
+                },
+                yAxis: {
+                  type: 'value',
+                  show: true
+                },
+                legend: {
+                  type: 'scroll',
+                  show: true,
+                  bottom: 0
+                },
+                tooltip: {
+                  show: true
+                },
+                series: newData
+              }
+              myChart.setOption(option)
+            }
+          }
+        })
+      },
+
+      // 绘制痘痘图
+      draw_doudou() {
+        let that = this
+        that.loading.doudou = 1
+        axios.get(`${URL}/jobbigdata/api/Station/GetClassification?code=${that.code}&name=${that.name}`).then(r => {
+          that.loading.doudou = 0
+          r = r.data || []
+          that.dd_data = r.Data || []
+          if(!that.dd_data.length) return
+          if (r.Code == 200) {
+            let data = [...(new Set(r.Data.map(e => e.file_job_name)))].map(e => {
+              return {
+                name: e,
+                children: r.Data.filter(ee => ee.file_job_name == e).map(ee => {
+                  return {
+                    name: ee.jobname,
+                    value: ee.N
+                  }
+                })
+              }
+            })
+
+            doudou_data = {
+              name: "招聘岗位分类",
+              children: data
+            }
+
+            let height = 500
+            let width = 500
+
+            let pack = data => d3.pack()
+              .size([width, height])
+              .padding(3)
+              (d3.hierarchy(data)
+                .sum(d => d.value)
+                .sort((a, b) => b.value - a.value))
+
+
+            const root = pack(doudou_data);
+            let focus = root;
+            let view;
+
+
+
+            function zoomTo(v) {
+              const k = width / v[2];
+
+              view = v;
+
+              label.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+              node.attr("transform", d => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
+              node.attr("r", d => d.r * k);
+            }
+
+
+            const svg = d3.create("svg")
+              .attr("viewBox", `-${width / 2} -${height / 2} ${width} ${height}`)
+              .style("display", "block")
+              .style("margin", "0 -14px")
+              .style("background", 'white')
+
+
+            const node = svg.append("g")
+              .selectAll("circle")
+              .data(root.descendants())
+              .join("circle")
+              .attr("fill", d => d.children ? '#a8e5e7' : "#6bd6d8")
+              .attr("pointer-events", d => !d.children ? "none" : null)
+
+
+            const label = svg.append("g")
+              .style("font", "10px sans-serif")
+              .attr("pointer-events", "none")
+              .attr("text-anchor", "middle")
+              .selectAll("text")
+              .data(root.descendants())
+              .join("text")
+              .style("fill-opacity", d => d.children ? 0 : 1)
+              .style("display", d => d.children ? "none" : "inline")
+              .text(d => d.data.name);
+            zoomTo([root.x, root.y, root.r * 2]);
+            doudou.innerHTML = ''
+            doudou.appendChild(svg.node())
+          }
+        })
+      },
+
+
+
+      /* 获取cookies的值 */
+      getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+
+      /* 点击下拉按钮退出 */
+      clickDropDown() {
+        let that = this
+        this.lid = this.getCookie('LID')
+        axios.defaults.headers.post['lid'] = that.lid
+        axios.post(URL + '/jobbigdata/api/Common/LogOut')
+          .then(function (res) {
+            that.$message({
+              showClose: true,
+              message: '退出成功',
+              type: 'success',
+            })
+             window.open(that.onLineAddress, '_self')
+          })
+          .catch(function (error) {
+             window.open(that.onLineAddress, '_self')
+          });
+      },
+
+      /* 获取地址栏的参数 */
+      getUrlParam(name) {
+        var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)", 'i'); //构造一个含有目标参数的正则表达式对象
+        var r = window.location.search.substr(1).match(reg); //匹配目标参数
+        if (r != null) return decodeURIComponent(r[2]);
+        return null; //返回参数值
+      },
+
+      init() {
+        if (this.category == 0) {
+          this.categoryDetail = '职业'
+        } else if (this.category == 1) {
+          this.categoryDetail = '岗位'
+        } else if (this.category == 2) {
+          this.categoryDetail = '专业'
+        } else if (this.category == 3) {
+          this.categoryDetail = '赛项'
+        } else if (this.category == 4) {
+          this.categoryDetail = '国家职业技能标准'
+        } else if (this.category == 5) {
+          this.categoryDetail = 'X证书标准'
+        }
+      },
+      /* 搜索框样式 */
+      clickInpu() {
+        this.show = !this.show;
+      },
+
+      inputChange(code) {
+        this.inputSearch = ''
+      },
+
+      clickSearch() {
+        if (this.inputSearch.trim() == '') {
+          this.$message({
+            showClose: true,
+            message: '请输入职业/工种/岗位/专业/标准/技能搜索',
+            type: 'warning'
+          });
+          return
+        }
+        window.open(`resultPage.html?keyword=${this.inputSearch}&code=&UID=${this.lid}&user=${this.user}`, '_blank')
+        this.inputSearch = ''
+      },
+
+      //获取用户信息
+      getUserInfo() {
+        let that = this
+        axios.get(URL + '/jobbigdata/api/Common/GetUserInfo', {
+            headers: {
+              'lid': that.lid
+            }
+          })
+          .then(function (res) {
+            if (res.status == 200) {
+              that.user = res.data
+            }
+          })
+          .catch(function (error) {
+            that.$message({
+              showClose: true,
+              message: '请登录后访问',
+              type: 'warning'
+            })
+            //  window.open(that.onLineAddress, '_self')
+
+          });
+      },
+
+
+
+    }
+  })
+</script>
+
+</html>
+
+<!--------------- Author: 王祝君 Time：20200924 --------------->

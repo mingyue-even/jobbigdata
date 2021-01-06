@@ -1,0 +1,41 @@
+
+/* --------------- Author: 王祝君 Time：20200922 --------------- */
+
+
+/* banner */
+.bannerWrap{height: 500px;overflow: hidden;position: relative;}
+/* 侧导航 */
+.sideNav{position: absolute;z-index: 99;width: 280px;height: 100%;border: none;top: 0;left: 50%;margin-left: -600px;background-color: rgba(0, 0, 0, .5);padding-top: 32px;}
+.sideNav .el-submenu__title{color: #fff;height: 38px;line-height: 38px;font-size: 15px;}
+.sideNav .el-menu-item{font-size: 15px;}
+.sideNav .el-submenu__title:hover{background: none;color: #81a8ff;}
+.sideNav .el-submenu.is-active .el-submenu__title{color:#81a8ff;background: rgba(4, 0, 0, .2);border-left: 3px #81a8ff solid;}
+.sidenavPop{top: 200px !important;}
+.sidenavPop .el-menu--popup{background: rgba(0, 0, 0, .6);width: 870px;height: 460px;padding: 20px 20px 20px 30px;margin-left: 1px;margin-top: -95px !important;}
+.sidenavPop .el-menu-item{display: inline-block;width: auto;color: #fff;min-width: auto;padding:0 10px !important;border-right: 1px #fff solid;height: 18px;
+    line-height: 18px; margin: 10px 0;font-size: 15px;}
+.sidenavPop .el-menu-item:last-child{border: none;}
+.sidenavPop .el-menu-item.is-active{background: none;color: #ffea00;}
+.sidenavPop .el-menu-item:hover{background: none;color: #ffea00;}
+
+.sideNavMore{padding-top: 13px;}
+.sideNavMore .el-submenu__title{font-size: 14px;height: 25px;line-height: 26px;}
+
+.dotBox .el-carousel__indicators--horizontal{right: 0;-webkit-transform: translateX(50%);transform: translateX(50%);}
+.dotBox .el-carousel__button{width: 10px;height: 10px;opacity: 1;border-radius: 50px;}
+.dotBox .el-carousel__indicator.is-active button{background: #517ee3;}
+.dotBox .el-carousel__indicator button:hover{background: #517ee3;opacity: 1;}
+
+
+/* 内容区 */
+.contTit h2{font-size: 18px;margin-bottom: 20px;font-weight: 600;}
+.contTit h2::before{content: '';display: inline-block;width: 3px;height: 18px;background: #2c6dff;vertical-align: middle;margin-right: 10px;}
+.contTit a{margin-top: 8px;}
+.contCard li{display: inline-block;background:#fff;width: 280px;height: 300px;border-radius: 10px;box-shadow: 0 0 10px rgba(4, 0, 0, .2);}
+.contCard li+li{margin-left: 22px;}
+.contCard li h3{text-align: center;position: relative;background: #517ee3;border-radius: 10px 10px 0 0;padding: 14px 0;color: #fff;font-size: 16px;}
+.contCard li h3 span{letter-spacing: 3px;}
+.contCard li h3 img{vertical-align: middle;margin-right: 5px;margin-top: -3px;}
+.contCard li h3 .more{font-size: 13px;color: #fff;position: absolute;top: 15px;right: 10px;font-weight: 500;}
+.contCard li h3 .more:hover{color: #ffc000;}
+.contCard .link{display: block;margin: 24px 0 0 30px;}

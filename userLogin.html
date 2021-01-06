@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>登录页面</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+
+
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<style>
+  .el-input {
+    width: 16% !important;
+  }
+</style>
+
+<body>
+  <div id="app">
+    <el-form :model="ruleForm" status-icon :rules="rules" ref="ruleForm" label-width="100px" class="demo-ruleForm"
+      size='mini'>
+      <el-form-item label="用户名" prop="name">
+        <el-input type="name" v-model="ruleForm.name" autocomplete="off"></el-input>
+      </el-form-item>
+      <el-form-item label="密码" prop="pass">
+        <el-input v-model.number="ruleForm.pass"></el-input>
+      </el-form-item>
+      <el-form-item>
+        <el-button type="primary" @click="submitForm('ruleForm')">提交</el-button>
+      </el-form-item>
+    </el-form>
+  </div>
+</body>
+<script>
+  new Vue({
+    el: '#app',
+    data() {
+      var checkAge = (rule, value, callback) => {
+        if (!value) {
+          return callback(new Error('用户名不能为空'));
+        }
+      };
+      var validatePass = (rule, value, callback) => {
+        if (value === '') {
+          callback(new Error('请输入密码'));
+        } else {
+          if (this.ruleForm.pass !== '') {
+            this.$refs.ruleForm.validateField('checkPass');
+          }
+          callback();
+        }
+      };
+      return {
+        ruleForm: {
+          pass: '',
+          name: ''
+        },
+        rules: {
+          pass: [
+            { validator: validatePass, trigger: 'blur' }
+          ],
+          age: [
+            { validator: checkAge, trigger: 'blur' }
+          ]
+        }
+      };
+    },
+    methods: {
+      submitForm(formName) {
+        let that = this
+        this.$refs[formName].validate((valid) => {
+
+          if (valid) {
+            let name = that.ruleForm.name
+            let pass = that.ruleForm.pass
+            window.open(`http://10.120.147.78/jobbigdata/home/login?name=${name}&pass=${pass}`,'_self')
+          } else {
+            console.log('error submit!!');
+            return false;
+          }
+        });
+      }
+
+    }
+  })
+</script>
+
+</html>

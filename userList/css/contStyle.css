@@ -1,0 +1,61 @@
+
+/* --------------- Author: 王祝君 Time：20200923 --------------- */
+
+
+/* 面包屑 */
+.crumbs{height: 48px;line-height: 48px;background: url(../images/bg-crumb.png) no-repeat top center;background-color: #517ee3;color: #fff;}
+.crumbs p{width: 1200px;margin: 0 auto;}
+.crumbs p img{vertical-align: middle;margin-top: -3px;}
+.crumbs p a{color: #fff;}
+
+/* 左侧导航 */
+.contLef{width: 242px;display: inline-block;vertical-align: top;border-radius: 6px;overflow: hidden;}
+.contLef .el-menu-vertical-demo{padding: 20px 0;}
+.contLef .el-menu-item-group__title{display: none;}
+.contLef .el-submenu .el-menu-item{height: auto;padding: 5px 15px 5px 0;line-height: 1.5;white-space: normal;margin-bottom: 5px;}
+.contLef .el-menu-item.is-active{background: #2f3339 !important;}
+.contLef .el-submenu.is-active .el-submenu__title{color:#ffc000 !important;}
+.contLef .el-submenu__icon-arrow{left: 10px;top: 18px;color: #fff;transform: rotate(-90deg);width: 14px;}
+.contLef .el-submenu.is-opened>.el-submenu__title .el-submenu__icon-arrow{transform:rotateX(0deg)}
+.contLef .el-submenu__title{padding: 8px 15px 8px 30px !important;height: auto;line-height: 1.5;white-space: normal;}
+
+/* 右侧内容 */
+.contRig{width: 938px;display: inline-block;vertical-align: top;margin-left: 12px;background: #fff;border-radius: 6px;position: relative;}
+
+
+/* 搜索结果统计 */
+.total{margin-right: 12px;font-size: 13px;border-right: 1px #333 solid;padding-right: 12px;color: #999;}
+.el-button.btnShow{padding: 4px 6px;font-size: 13px;}
+.el-button.btnShow i{color: #00ffea;font-size: 16px;}
+.el-button.btnShowAll{background-color: #bf9d00;border-color: #bf9d00;}
+.el-button.btnShowAll:hover,.el-button.btnShowAll:focus{background-color: #ad8e00;}
+.el-button.btnShowAll i{color: #fff;}
+
+
+/* 可视化分析 */
+.visCont{background: #fff;border-radius: 6px;padding: 0 0 10px;}
+.visTop{padding:15px 20px;border-bottom: 5px #eef1f3 solid;}
+.visBot{padding:15px 0 0;}
+.visBot h3{font-size: 15px;font-weight: 600;padding: 5px 0 10px 20px;}
+.visBot h3 img{vertical-align: middle;margin-top: -4px;}
+
+.chartWrap{border-bottom: 2px #eef1f3 solid;}
+.chartWrap:last-child{border: none;}
+.chartWrap .chart{width: 870px;height: 450px;display: inline-block;vertical-align: middle;}
+.chartWrap h4{display: inline-block;vertical-align: middle;font-size: 13px;font-weight: 600;width: 15px;margin-left: 20px;}
+.botSkill{border-top: 8px #eef1f3 solid;}
+.botSkill h3{border: none;}
+.analyTabs .el-tabs__nav-wrap::after{height: 3px;}
+.analyTabs .el-tabs__item{height: 43px;}
+
+
+/* 结果页 */
+.resultTop,.resultBot{padding:20px}
+.resultTop{border-bottom: 5px #eef1f3 solid;}
+.resultTop li+li{margin-top: 15px;}
+.resultTop span{min-width: auto;display: inline-block;margin-right: 20px;}
+.resultTop .sort{display: inline-block;vertical-align: top;width: 88%;word-break: keep-all;}
+.resultTop .sort span{min-width: auto;}
+.resultTop .sort span{margin-bottom: 5px;}
+.resultTop .sort span:hover{cursor: pointer;color: #517ee3;}
+.resultTop .sort span.active{font-weight: 600;color: #517ee3;}

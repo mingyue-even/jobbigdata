@@ -1,0 +1,269 @@
+<!DOCTYPE>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>职业岗位大数据申请试用用户</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+
+  <!-- css -->
+  <link href="css/common.css" rel="stylesheet" type="text/css" />
+
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<style>
+  * {
+    margin: 0;
+    padding: 0;
+  }
+
+  .container {
+    width: 60%;
+    height: 85%;
+    margin: auto
+  }
+
+  .el-input {
+    position: relative;
+    font-size: 14px;
+    display: inline-block;
+    width: 40%;
+  }
+</style>
+
+<body>
+  <div id="app">
+    <div class="container">
+      <div style="margin: 20px;"></div>
+
+      <el-button @click="dialogVisible=true">addUser</el-button>
+
+      <el-dialog title="添加或修改用户信息" :visible.sync="dialogVisible" width="50%">
+        <!-- 表单 -->
+      <el-form label-position="right" label-width="200px" :model="formLabelAlign">
+        <el-form-item label="用户名">
+          <el-input v-model="formLabelAlign.UserName"></el-input>
+        </el-form-item>
+        <el-form-item label="机构名">
+          <el-input v-model="formLabelAlign.InstShowName"></el-input>
+        </el-form-item>
+        <el-form-item label="真实姓名">
+          <el-input v-model="formLabelAlign.PersonUserName"></el-input>
+        </el-form-item>
+
+
+        <el-form-item>
+          <el-button type="primary" @click="submitForm(formLabelAlign)">提交</el-button>
+        </el-form-item>
+      </el-form>
+
+
+        <span slot="footer" class="dialog-footer">
+          <el-button @click="dialogVisible = false">取 消</el-button>
+          <el-button type="primary" @click="dialogVisible = false">确 定</el-button>
+        </span>
+      </el-dialog>
+
+      
+
+      <!-- 表格 -->
+      <el-table :data="tableData" style="width: 100%;margin-top:20px" v-loading="loading" element-loading-text="数据加载中"
+        style="width: 100%" size='medium'>
+        <el-table-column prop="UserName" label="用户名" width="200px">
+          <template slot-scope="scope">
+            {{scope.row.UserName}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="InstShowName" label="机构名" width="">
+          <template slot-scope="scope">
+            {{scope.row.InstShowName}}
+          </template>
+        </el-table-column>
+        <el-table-column prop="PersonUserName" label="真实姓名" width="">
+          <template slot-scope="scope">
+            {{scope.row.PersonUserName}}
+          </template>
+        </el-table-column>
+
+        <el-table-column fixed="right" label="操作" width="100">
+          <template slot-scope="scope">
+            <el-button @click.native.prevent="deleteRow(scope.$index, tableData)" type="text" size="small">
+              移除
+            </el-button>
+            <el-button @click.native.prevent="editUser(scope.$index, tableData)" type="text" size="small">编辑</el-button>
+          </template>
+        </el-table-column>
+
+      </el-table>
+
+      <!-- 分页 -->
+      <div class="clearfix">
+        <el-pagination class="fr" background layout="prev, pager, next ,total" :total="Total" :page-size="10"
+          @current-change="pageChange" :current-page="pageIndex"></el-pagination>
+      </div>
+
+
+     
+    </div>
+
+
+
+  </div>
+
+</body>
+
+
+<script>
+
+  const URL = 'http://10.120.147.78'
+  //const URL = 'https://zygw.cnki.net'
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        dialogVisible:false,
+        // 表单的数据
+        formLabelAlign: {
+          ID:0,
+          UserName: '',
+          InstShowName: '',
+          PersonUserName: '',
+          InstUserName:''
+        },
+        tableData: [],
+        pageIndex: 1,
+        loading: false,
+        Total: 0,
+        lid: ''
+      }
+    },
+
+    mounted() {
+      this.lid = this.getCookie('LID')
+      // this.getApplyList(1,10)
+      this.getUserList()
+    },
+    methods: {
+      editUser(index,data){
+        this.dialogVisible = true
+        this.formLabelAlign.UserName = data[index].UserName
+        this.formLabelAlign.InstShowName = data[index].InstShowName
+        this.formLabelAlign.PersonUserName = data[index].PersonUserName
+        this.formLabelAlign.ID = data[index].ID
+        this.formLabelAlign.InstUserName = data[index].InstUserName
+      },
+
+      // 提交表单
+      submitForm(v) {
+        let that = this
+
+        axios.post(URL + '/jobbigdata/api/common/AddUser', {
+          ID: Number(v.ID),
+          UserName: v.UserName,
+          InstShowName: v.InstShowName,
+          PersonUserName: v.PersonUserName,
+          InstUserName:v.InstUserName
+        })
+          .then(function (response) {
+            that.getUserList(that.pageIndex)
+            that.$message({
+              type:'success',
+              message:'添加用户成功',
+              showClose:true
+            })
+
+            this.formLabelAlign.UserName = ''
+        this.formLabelAlign.InstShowName = ''
+        this.formLabelAlign.PersonUserName = ''
+        this.formLabelAlign.ID = ''
+        this.formLabelAlign.InstUserName = ''
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
+
+      },
+
+      // 获取用户列表
+      getUserList(pageIndex) {
+        let that = this
+        if(pageIndex){
+          this.pageIndex = pageIndex
+        }else{
+          this.pageIndex = 1
+        }
+        $.ajax({
+          url: URL + '/jobbigdata/api/common/getuserlist',
+          data: {
+            userName: '',
+            pageIndex: pageIndex || 1,
+            pageSize: 10
+          },
+          success: function (res) {
+            that.tableData = res.Data
+            that.Total = res.Total
+          }
+        })
+      },
+      // 删除用户信息
+      deleteRow(index, rows) {
+        rows.splice(index, 1);
+      },
+      /* 获取申请试用的用户信息 */
+      getApplyList(pageIndex, pageSize) {
+        let that = this
+        that.loading = true
+        axios.get(URL + '/jobbigdata/api/Index/GetApplyList', {
+          headers: { 'lid': that.lid },
+          params: {
+            pageIndex,
+            pageSize,
+          }
+        })
+          .then(function (res) {
+            that.loading = false
+            if (res.data.Code == 200) {
+              that.tableData = res.data.Data || []
+              that.Total = res.data.Total || 0
+            }
+
+          })
+          .catch(function (error) {
+            that.loading = false
+            alert('获取用户信息错误！')
+          });
+      },
+
+      // 切换页码
+      pageChange(pageIndex) {
+        // this.getApplyList(pageIndex, 10)
+        this.getUserList(pageIndex)
+
+      },
+
+      /* 获取cookies的值 */
+      getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+    }
+
+
+
+  })
+</script>
+
+</html>

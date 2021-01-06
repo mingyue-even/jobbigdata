@@ -1,0 +1,951 @@
+<!DOCTYPE>
+<html>
+
+<head>
+  <meta content="text/html" charset="UTF-8" />
+  <title>职业岗位大数据服务平台</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+  <!-- css -->
+  <link href="css/common.css" rel="stylesheet" type="text/css" />
+  <link href="css/detailStyle.css" rel="stylesheet" type="text/css" />
+  <!-- js -->
+  <script src="js/echarts.min.js"></script>
+  <script src="js/chart2.js"></script>
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="js/jquery.min.js"></script>
+
+  <script src="js/d3.min.js"></script>
+  <!-- 引入iconfont -->
+  <link rel="stylesheet" href="./iconfont/iconfont.css">
+</head>
+<style>
+  /* 输入框高亮后 */
+  .head-top {
+    height: 45px !important;
+  }
+
+  #country {
+    width: 100%;
+    height: 500px;
+  }
+
+  #province {
+    width: 100%;
+    height: 500px;
+  }
+
+  /* 头部背景图 */
+  .searchBack {
+    height: 200px;
+    background: url(./images/background.jpg) no-repeat;
+    background-size: cover;
+    position: relative;
+  }
+
+  .searchDiv {
+    height: 20%;
+    width: 25%;
+    margin: auto;
+    position: absolute;
+    left: 0;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    border-radius: 5px;
+  }
+
+  .leftSearch {
+    flex: 2;
+  }
+
+  .rightSearch {
+    flex: 6;
+  }
+
+  /* echarts标题 */
+  .contTit {
+    height: 40px;
+    line-height: 40px;
+    border-bottom: 2px solid #eee;
+    display: flex;
+  }
+
+  .contMain {
+    margin-top: 15px;
+  }
+
+  /* 切换页面 */
+  .wid45 {
+    width: 45px;
+    display: inline-block;
+    cursor: pointer;
+  }
+
+  .orange {
+    color: rgb(255, 192, 0)
+  }
+
+  /* 职业概览切换样式 */
+  .el-tabs__content {
+    height: 0;
+  }
+
+  .el-input__suffix {
+    cursor: pointer;
+  }
+
+  /* 导航 左右点击样式*/
+  .el-tabs__nav-scroll {
+    overflow: hidden;
+    margin: 0 22px;
+  }
+
+  .el-icon-arrow-left:before {
+    content: "\e6de";
+    font-size: 42px;
+  }
+
+  .el-icon-arrow-right:before {
+    content: "\e6e0";
+    font-size: 42px;
+  }
+</style>
+
+<body>
+  <div id="app" style="background: #fff;">
+    <!-- 头部 -->
+    <div class="head-top">
+      <div class="head">
+        <h1 class="fl"><span class="blue">职业岗位</span>大数据服务平台</h1>
+
+        <!-- 添加 首页 职业 岗位 专业标签 -->
+        <div style="
+         line-height: 31px;
+     ">
+          <span :class="[{wid45:1},{orange:activeModel == '首页'}]" @click='switchPage("首页")'>首页</span>
+          <span :class="[{wid45:1},{orange:activeModel == '职业'}]" @click='switchPage("职业")'>职业</span>
+          <span :class="[{wid45:1},{orange:activeModel == '岗位'}]" @click='switchPage("岗位")'>岗位</span>
+          <span :class="[{wid45:1},{orange:activeModel == '专业'}]" @click='switchPage("专业")'>专业</span>
+
+          <!-- 登录前 -->
+          <a v-if="user == ''" class="login fr" href='userLogin.html'>
+            登录&nbsp;&nbsp;|&nbsp;&nbsp;LOGIN
+          </a>
+          <!-- 登录后 -->
+          <span v-else class="login fr">
+            <el-dropdown size="mini" placement='bottom' @command="clickDropDown">
+              <span class="el-dropdown-link">
+                <span class="portWrap"><i class="el-icon-user"></i></span>
+              </span>
+              <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item>退出登录</el-dropdown-item>
+                </el-dropdown-item>
+              </el-dropdown-menu>
+            </el-dropdown>
+            {{user}}
+          </span>
+
+        </div>
+
+
+      </div>
+      <!-- head ending -->
+    </div>
+
+    <!-- 头部背景图 -->
+    <div class="searchBack">
+      <div class="searchDiv">
+        <el-select class="leftSearch" v-model="value">
+          <el-option label="职业" value="职业"></el-option>
+          <el-option label="岗位" value="岗位"></el-option>
+          <el-option label="专业" value="专业"></el-option>
+        </el-select>
+        <el-input class="rightSearch" size="middle" placeholder="请输入内容" suffix-icon="el-icon-search"
+          v-model.trim="input" @change="clickInput"></el-input>
+      </div>
+    </div>
+
+    <!-- 主体内容区 -->
+    <div class="mainContent">
+      <!-- 岗位概览 -->
+      <div class="postBrowse">
+        <div class="contWrap" style="margin-top: 30px;">
+          <div class="cont">
+            <div class="contTit clearfix">
+              <i class="iconfont icon-manager-o" style="margin-right: 10px;"></i>
+
+              <h2>岗位概览</h2>
+            </div>
+            <div class="contMain">
+              <el-row>
+                <el-tabs v-model="activeNav" type="card" @tab-click="handleClickPostNav">
+                  <el-tab-pane :label="cate.name" :name="cate.code" v-for="cate in cateArr" :key='cate.code'>
+                  </el-tab-pane>
+
+                </el-tabs>
+              </el-row>
+              <!-- 国家 -->
+              <el-row>
+                <el-col :span="22">
+                  <div id="country"></div>
+                </el-col>
+                <!-- <el-col :span="10">
+                  <div id="province"></div>
+                </el-col> -->
+              </el-row>
+              <div style="margin:20px"></div>
+              <el-row>
+                <el-col :span="12">
+                  <div id="typicalPost_main" style="height:300px"></div>
+                </el-col>
+                <el-col :span="12">
+                  <div id="hotEnterprise_main" style="height:300px"></div>
+                </el-col>
+              </el-row>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 职业概览 -->
+      <div class="postBrowse">
+        <div class="contWrap" style="margin-top: 30px;">
+          <div class="cont">
+            <div class="contTit clearfix">
+              <i class="iconfont icon-hetongguanli" style="margin-right: 10px;"></i>
+              <h2>职业概览</h2>
+            </div>
+            <div class="contMain">
+              <el-row>
+                <!-- 职业一级分类 -->
+                <el-tabs v-model="activeName" type="card" @tab-click="handleClickcareerNav">
+                  <el-tab-pane label="生产制造及有关人员" name="6"></el-tab-pane>
+                  <el-tab-pane label="专业技术人员" name="2"></el-tab-pane>
+                  <el-tab-pane label="办事人员和有关人员" name="3"></el-tab-pane>
+                  <el-tab-pane label="社会生产服务和生活服务人员" name="4"></el-tab-pane>
+                  <el-tab-pane label="农、林、牧、渔业生产及辅助人员" name="5"></el-tab-pane>
+                </el-tabs>
+              </el-row>
+              <el-row>
+                <div id="careerBrowser_main" style="height:600px"></div>
+              </el-row>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 专业概览 -->
+      <div class="postBrowse">
+        <div class="contWrap" style="margin-top: 30px;">
+          <div class="cont">
+            <div class="contTit clearfix">
+              <i class="iconfont icon-book" style="margin-right: 10px;"></i>
+              <h2>专业概览</h2>
+            </div>
+            <div class="contMain">
+              <!-- 导航 -->
+              <el-row>
+                <el-tabs v-model="activeNavMajor" type="card" @tab-click="handleClickMajorNav">
+                  <el-tab-pane :label="cate.name" :name="cate.code" v-for="cate in cateArr" :key='cate.code'>
+                  </el-tab-pane>
+                </el-tabs>
+              </el-row>
+              <!-- 图 -->
+              <el-row>
+                <div id="majorBrowser_main" style="height:600px"></div>
+              </el-row>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+    </div>
+
+
+
+
+    <!-- 版权信息 -->
+    <div class="footer">
+      <div class="foot-bot clearfix">
+        <div class="t">
+          <img src="//piccache.cnki.net/kdn/index/kns8/nimages/foot-logo.png" alt="中国知网">
+          <p class="mid">
+            <span>
+              <a target="_blank" href="//www.cnki.net/gycnki/gycnki.htm">关于我们</a>
+              <a target="_blank" href="//www.cnki.net/other/gonggao/gongsirongyu.html">CNKI 荣誉</a>
+              <a target="_blank" href="//www.cnki.net/other/gonggao/bqsm.htm">版权公告</a>
+              <a target="_blank" href="//service.cnki.net/">客服中心</a>
+              <a target="_blank" href="//help.cnki.net/">在线咨询</a>
+              <a target="_blank" href="//help.cnki.net/Live800_2_2.aspx">用户建议</a>
+              <a target="_blank" href="//piccache.cnki.net/index/CNKIRecruit/index.html">知网招聘</a>
+              <a target="_blank" href="//a.cnki.net/">知网推广</a>
+            </span>
+            <span id="copyright">© 1998-2021 中国知网（CNKI）</span>
+          </p>
+
+        </div>
+        <div class="b">
+          <span>京 ICP 证 040431 号<a target="_blank" href="//piccache.cnki.net/index/images/gb/271.jpg">网络出版服务许可证
+              (总)网出证(京)字第 271 号</a><a target="_blank" href="//piccache.cnki.net/index/images/gb/170001.jpg">出版物经营许可证</a>
+            京公网安备 11010802020460 号</span>
+          <span>《中国学术期刊（光盘版）》电子杂志社有限公司</span>
+          <span>KDN 平台基础技术由 KBASE 11.0 提供.</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+
+<script src="./js/mapData.js"></script>
+<script>
+  const URL = 'http://10.120.147.78'
+  // const URL = 'https://zygw.cnki.net'
+  var provinces = ['shanghai', 'hebei', 'shan1xi', 'neimenggu', 'liaoning', 'jilin', 'heilongjiang', 'jiangsu',
+    'zhejiang', 'anhui', 'fujian', 'jiangxi', 'shandong', 'henan', 'hubei', 'hunan', 'guangdong', 'guangxi', 'hainan',
+    'sichuan', 'guizhou', 'yunnan', 'xizang', 'shan3xi', 'gansu', 'qinghai', 'ningxia', 'xinjiang', 'beijing',
+    'tianjin', 'chongqing', 'hongkong', 'macau', 'taiwan'
+  ];
+
+  var provincesText = ['上海', '河北', '山西', '内蒙古', '辽宁', '吉林', '黑龙江', '江苏', '浙江', '安徽', '福建', '江西', '山东', '河南', '湖北', '湖南',
+    '广东', '广西', '海南', '四川', '贵州', '云南', '西藏', '陕西', '甘肃', '青海', '宁夏', '新疆', '北京', '天津', '重庆', '香港', '澳门', '台湾'
+  ];
+
+  let v = new Vue({
+    el: '#app',
+    data() {
+      return {
+        activeNav: '51', //岗位导航的code
+        activeNavMajor: '51', //专业导航的code
+        activeName: '6',
+        activeModel: '首页',
+        input: '',
+        value: '职业', //背景图中间的输入框
+        inputSearch: '', //搜索
+        show: false,
+        lid: '', //用户登录
+        user: '', // 用户名
+        cateArr: [],
+        flag: false,
+        code: '51', //岗位导航的code 默认是农林牧渔类
+        codeMajor: '51', //专业导航的code 默认是农林牧渔类
+        // onLineAddress: 'https://login.cnki.net/login/?platform=kns&ForceReLogin=1&ReturnURL='+URL+'/jbd/firstPage.html',
+        onLineAddress: 'userLogin.html'
+      }
+    },
+
+    created() {
+      window.v = this
+    },
+
+    mounted() {
+      let that = this
+      this.lid = this.getCookie('LID')
+      this.getUserInfo()
+
+      this.getClassification()
+
+      this.drawCareerBroswer(6)
+      this.drawMajorBroswer(51)
+
+      $('.el-input__icon.el-icon-search').click(function () {
+        if(that.input == ''){
+          that.$message({
+            type:'warning',
+            message:'请输入内容',
+            showClose:true
+          })
+          return 
+        }
+        if (that.value == '专业') {
+          window.open(`majorNavPage.html?keyword=${that.input}`)
+        } else if (that.value == '职业') {
+          window.open(`careerNavPage.html?keyword=${that.input}`)
+        } else if (that.value == '岗位') {
+          window.open(`postNavPage.html?keyword=${that.input}`)
+        }
+      })
+
+      // 点击加载地图
+      this.$nextTick(() => {
+        $('.ciyun_ul').delegate('li', 'click', function () {
+          console.log($(this))
+          // $(this).attr('background','pink')
+          this.setAttribute('color', 'pink');
+        })
+      })
+    },
+
+    methods: {
+
+      /* 获取cookies的值 */
+      getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+
+      //获取用户信息
+      getUserInfo() {
+        let that = this
+        axios.get(URL + '/jobbigdata/api/Common/GetUserInfo', {
+          headers: {
+            'lid': that.lid
+          }
+        })
+          .then(function (res) {
+            if (res.status == 200) {
+              that.user = res.data
+            }
+          })
+          .catch(function (error) {
+            that.$message({
+              showClose: true,
+              message: '请登录后访问',
+              type: 'warning'
+            })
+            window.open(that.onLineAddress, '_self')
+
+          });
+      },
+
+
+      // 专业概览导航
+      handleClickMajorNav(v) {
+        this.codeMajor = v.name
+        this.drawMajorBroswer(v.name)
+      },
+      // 岗位概览导航
+      handleClickPostNav(v) {
+        this.code = v.name
+        this.drawCountry()
+        this.drawTypicalPost()
+        this.drawHotEnterprise()
+      },
+      // 职业概览导航
+      handleClickcareerNav(v) {
+        console.log(v.name)
+        this.drawCareerBroswer(v.name)
+      },
+      // 切换页面
+      switchPage(v) {
+        if (v == '专业') {
+          window.open('majorNavPage.html', '_blank')
+        } else if (v == '岗位') {
+          window.open('postNavPage.html', '_blank')
+        } else if (v == '职业') {
+          window.open('careerNavPage.html', '_blank')
+        }
+
+      },
+      // 画图专业概览
+      drawMajorBroswer(code) {
+        let myCharts = echarts.init(document.getElementById('majorBrowser_main'))
+        myCharts.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Major/GetOverView?code=${code}`,
+          success: function (res) {
+            myCharts.hideLoading()
+            if (res.Code == 200) {
+              let dataName = res.Data.map(e => e.Name)
+              let data2015 = res.Data.map(e => e['2015'])
+              let data2016 = res.Data.map(e => e['2016'])
+              let data2017 = res.Data.map(e => e['2017'])
+              let data2018 = res.Data.map(e => e['2018'])
+              let data2019 = res.Data.map(e => e['2019'])
+              option = {
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+                  }
+                },
+                legend: {
+                  data: ['2015', '2016', '2017', '2018', '2019']
+                },
+                grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                yAxis: {
+                  type: 'value'
+                },
+                xAxis: {
+                  type: 'category',
+                  data: dataName
+                },
+                series: [{
+                  name: '2015',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2015
+                },
+                {
+                  name: '2016',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2016
+                },
+                {
+                  name: '2017',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2017
+                },
+                {
+                  name: '2018',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2018
+                },
+                {
+                  name: '2019',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2019
+                },
+                ]
+              };
+              myCharts.setOption(option)
+
+            }
+
+
+          }
+        })
+      },
+
+      // 画图职业概览
+      drawCareerBroswer(code) {
+        let myCharts = echarts.init(document.getElementById('careerBrowser_main'))
+        myCharts.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Occupation/GetOverView?code=${code}`,
+          success: function (res) {
+            myCharts.hideLoading()
+            if (res.Code == 200) {
+              let dataName = res.Data.map(e => e.Name)
+              let data2015 = res.Data.map(e => e['2015'])
+              let data2019 = res.Data.map(e => e['2019'])
+              let data2020 = res.Data.map(e => e['2020'])
+              option = {
+                tooltip: {
+                  trigger: 'axis',
+                  axisPointer: { // 坐标轴指示器，坐标轴触发有效
+                    type: 'shadow' // 默认为直线，可选为：'line' | 'shadow'
+                  }
+                },
+                legend: {
+                  data: ['2015', '2019', '2020']
+                },
+                grid: {
+                  left: '3%',
+                  right: '4%',
+                  bottom: '3%',
+                  containLabel: true
+                },
+                yAxis: {
+                  type: 'value'
+                },
+                xAxis: {
+                  type: 'category',
+                  data: dataName,
+                  axisTick: {
+                    show: true,
+                    alignWithLabel: true
+                  },
+                },
+                series: [{
+                  name: '2015',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2015
+                },
+                {
+                  name: '2019',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2019
+                },
+                {
+                  name: '2020',
+                  type: 'bar',
+                  stack: '总量',
+                  label: {
+                    show: false,
+                    position: 'insideRight'
+                  },
+                  data: data2020
+                }
+                ]
+              };
+              myCharts.setOption(option)
+
+            }
+
+
+          }
+        })
+      },
+      // 画图热门企业
+      drawHotEnterprise() {
+        let that = this
+        let myEcharts = echarts.init(document.getElementById('hotEnterprise_main'))
+        myEcharts.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetCompanyTop30?code=${that.code}`,
+          success: function (res) {
+            myEcharts.hideLoading()
+            if (res.Code == 200) {
+              let dataName = res.Data.map(e => e.companyName)
+              let dataNunber = res.Data.map(e => e.Num)
+
+              let option = {
+                tooltip: {
+                  type: 'axis'
+                },
+                title: {
+                  text: '热门企业',
+                  x: 'center',
+                  textStyle: {
+                    color: '#0C7FD0'
+                  }
+                },
+                xAxis: {
+                  type: 'category',
+                  data: dataName,
+                  splitLine: {
+                    show: false
+                  },
+                  axisTick: {
+                    show: true,
+                    alignWithLabel: true
+                  },
+                  axisLabel: {
+                    interval: 7
+                  }
+                },
+                yAxis: {
+                  type: 'value',
+                  name: '数量(top 30)',
+                  splitLine: {
+                    show: false
+                  }
+
+                },
+                series: [{
+                  type: 'bar',
+                  data: dataNunber,
+                  color: '#FFC000'
+                }]
+              }
+              myEcharts.setOption(option)
+            }
+          }
+        })
+
+      },
+
+      // 画图典型岗位
+      drawTypicalPost() {
+        let that = this
+        let myEcharts = echarts.init(document.getElementById('typicalPost_main'))
+        myEcharts.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetTypicalTop?code=${that.code}`,
+          success: function (res) {
+            myEcharts.hideLoading()
+            if (res.Code == 200) {
+              let dataName = res.Data.map(e => e.file_job_name)
+              let dataNumber = res.Data.map(e => e.N)
+
+              let option = {
+                tooltip: {
+                  type: 'axis',
+
+                },
+                title: {
+                  text: '典型岗位',
+                  x: 'center',
+                  textStyle: {
+                    color: '#0C7FD0'
+                  }
+                },
+                xAxis: {
+                  type: 'category',
+                  data: dataName,
+                  axisTick: {
+                    show: true,
+                    alignWithLabel: true
+                  },
+                  axisLabel: {
+                    interval: 5
+                  },
+                  boundaryGap: true
+
+                },
+                yAxis: {
+                  type: 'value',
+                  name: '数量(top 30)',
+                  splitLine: {
+                    show: false
+                  }
+
+                },
+                series: [{
+                  type: 'bar',
+                  data: dataNumber,
+                  color: '#02CDE6'
+                }]
+              }
+              myEcharts.setOption(option)
+            }
+          }
+        })
+
+      },
+      // 输入框搜索 跳转到 职业 岗位 专业 页面
+      clickInput(v) {
+        if (this.value == '专业') {
+          window.open(`majorNavPage.html?keyword=${v}`)
+        } else if (this.value == '职业') {
+          window.open(`careerNavPage.html?keyword=${v}`)
+        } else if (this.value == '岗位') {
+          window.open(`postNavPage.html?keyword=${v}`)
+        }
+      },
+
+
+
+      /* 点击下拉按钮退出 */
+      clickDropDown() {
+        let that = this
+        this.lid = this.getCookie('LID')
+        axios.defaults.headers.post['lid'] = that.lid
+        axios.post(URL + '/jobbigdata/api/Common/LogOut')
+          .then(function (res) {
+            that.lid = null
+            window.open(that.onLineAddress, '_self')
+          })
+          .catch(function (error) {
+            that.$message({
+              showClose: true,
+              message: 'error',
+              type: 'success',
+            })
+            window.open(that.onLineAddress, '_self')
+          });
+      },
+      // 获取专业分类列表
+      getClassification() {
+        let that = this
+        axios.get(URL + '/jobbigdata/api/Common/GetProfessionalClassificationList')
+          .then((res) => {
+            this.cateArr = res.data.Data || []
+            this.drawCountry()
+            this.drawTypicalPost()
+            this.drawHotEnterprise()
+            this.$nextTick(() => {
+              var w = 0
+              $('.ciyun_main li').each(function () {
+                var iw = $(this).outerWidth(true)
+                w += iw
+              })
+              $('.ciyun_main ul').css('width', w + 'px')
+            })
+          })
+          .catch(function (error) {
+            console.log(error);
+          });
+
+      },
+
+      convertData(data) {
+        var res = [];
+        for (var i = 0; i < data.length; i++) {
+          var geoCoord = geoCoordMap[data[i].name];
+          if (geoCoord) {
+            res.push({
+              name: data[i].name,
+              value: geoCoord.concat(data[i].value)
+            });
+          }
+        }
+        return res;
+      },
+
+      drawCountry() {
+        var data = []
+        var min = 0
+        var max = 0
+        let that = this
+        // var name = '河北'
+
+        // 基于准备好的dom，初始化echarts实例
+
+        var chart = echarts.init(document.getElementById('country')); //初始化
+        chart.showLoading()
+        $.ajax({
+          url: URL + `/jobbigdata/api/Station/GetRecruitWorkArea?code=${that.code}`,
+          success: function (result) {
+            chart.hideLoading()
+            if (result.Code == 200) {
+              data = json_array(result.Data);
+              showMap()
+            }
+          }
+        });
+        //json转js数组
+        function json_array(data) {
+          var len = eval(data).length;
+          var arr = [];
+          for (var i = 0; i < len; i++) {
+            if (i == 0) {
+              min = data[i].N
+            } else if (i == len - 1) {
+              max = data[i].N
+            }
+            arr[i] = []; //js中二维数组必须进行重复的声明，否则会undefind
+            arr[i]['name'] = data[i].workarea;
+            arr[i]['value'] = data[i].N;
+          }
+          return arr;
+        }
+
+        //渲染
+        function showMap() {
+          echarts.registerMap('china', chinaJson);
+          option = {
+            title: {
+              text: '全国',
+              x: 'center',
+              textStyle: {
+                color: '#0C7FD0'
+              }
+            },
+
+            tooltip: {
+              show: true,
+              formatter: function (param) {
+                return "<span style='display: inline-block; margin-right: 5px; border-radius: 10px; width: 9px; height: 9px; background-color:" +
+                  param.color + "''></span>" + " " + param.name + "：" + param.value[2];
+              }
+            },
+            visualMap: {
+              min: min,
+              max: max,
+              realtime: false,
+              calculable: true,
+              inRange: {
+                color: ['lightskyblue', 'yellow', 'orangered']
+              }
+            },
+            geo: {
+              map: 'china',
+              roam: false,
+              silent: true,
+              label: {
+                normal: {
+                  show: false, //关闭省份名展示
+                },
+                emphasis: {
+                  show: false
+                }
+              },
+              itemStyle: {
+                normal: {
+                  areaColor: "#0d0059",
+                  borderColor: "#389dff",
+                  borderWidth: 1, //设置外层边框
+                  shadowBlur: 5,
+                  shadowOffsetY: 8,
+                  shadowOffsetX: 0,
+                  shadowColor: "#01012a"
+                },
+                emphasis: {
+                  areaColor: "#d6b611",
+                  shadowOffsetX: 0,
+                  shadowOffsetY: 0,
+                  shadowBlur: 5,
+                  borderWidth: 0,
+                  shadowColor: "rgba(0, 0, 0, 0.5)"
+                }
+              },
+              // selectedMode: 'single',
+              // regions: [{
+              //   name: name,
+              //   itemStyle: {
+              //     areaColor: '#d6b611',
+              //     color: '#d6b611'
+              //   }
+              // }]
+            },
+            series: [{
+              type: 'scatter',
+              coordinateSystem: 'geo',
+              data: that.convertData(data),
+              symbol: 'circle',
+              symbolSize: function (val) {
+                return (val[2] + 5000) / 1000
+              }
+            }]
+          };
+
+          chart.setOption(option);
+        }
+
+
+      }
+
+
+
+    }
+  })
+</script>
+
+</html>

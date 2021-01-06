@@ -1,0 +1,48 @@
+
+/* --------------- Author: 王祝君 Time：20200924 --------------- */
+
+
+/* 面包屑 */
+.crumbs{height: 48px;line-height: 48px;background: url(../images/bg-crumb.png) no-repeat top center;background-color: #517ee3;color: #fff;}
+.crumbs p{width: 1200px;margin: 0 auto;}
+.crumbs p img{vertical-align: middle;margin-top: -3px;}
+.crumbs p a{color: #fff;}
+
+.detailTop{margin-bottom: 16px;}
+.dtLef,.dtRig{display: inline-block;vertical-align: top;background: #fff;border-radius: 6px;padding-bottom: 30px;}
+.dtLef{width: 68%;margin-right: 15px;}
+.title{padding: 15px 20px 15px 30px;border-bottom: 3px #eef1f3 solid;}
+.title h3{font-size: 16px;font-weight: 600;}
+.title .btnIcon{padding: 0;}
+.detailCon{padding: 15px 20px 15px 30px;min-height:382px;}
+.detailCon li{margin-top: 20px;}
+.detailCon li .label,.detailCon li .con{display: inline-block;vertical-align: top;}
+.detailCon li .label{width: 80px;font-weight: 600;}
+.detailCon li .con{max-width: 680px;line-height: 1.5;}
+.detailCon li .con span{margin-bottom: 10px;display: block;}
+/* 相关标准 */
+.stand{font-size: 15px;color: #fff;background: #bca167;width: 130px;padding: 2px 5px;text-align: center;border-radius: 3px;margin: 20px 0 10px;}
+.stand:first-child{margin-top: 0;}
+.rigStand a{display: block;margin-bottom: 8px;}
+.standMore{margin: -30px 0 0 0;color: #bca167 !important;}
+
+.dtRig{width: 30%;}
+
+
+.detailBot{background: #fff;border-radius: 6px;padding-bottom: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+}
+.detailTabs{margin-left: 15px;}
+.detailTabs .el-tabs__nav-wrap::after{height: 3px;}
+.detailTabs .el-tabs__item{height: 44px;}
+.chartWrap{position: relative;}
+.btnZoomOut,.btnZoomIn{position: absolute;right: 40px;font-size: 20px;color: #333;z-index: 999999;}
+.btnZoomOut{right: 80px;}
+
+/* .chart{width: 500px;height: 480px;margin:-50px auto 0;} */
+.chart{width: 800px;height: 480px;margin: auto 0;}
+
+

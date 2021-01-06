@@ -1,0 +1,30 @@
+{
+  "id": "2300393",
+  "name": "jbd",
+  "font_family": "iconfont",
+  "css_prefix_text": "icon-",
+  "description": "",
+  "glyphs": [
+    {
+      "icon_id": "642067",
+      "name": "manage",
+      "font_class": "hetongguanli",
+      "unicode": "e610",
+      "unicode_decimal": 58896
+    },
+    {
+      "icon_id": "9358689",
+      "name": "manager-o",
+      "font_class": "manager-o",
+      "unicode": "e600",
+      "unicode_decimal": 58880
+    },
+    {
+      "icon_id": "18125947",
+      "name": "book",
+      "font_class": "book",
+      "unicode": "e862",
+      "unicode_decimal": 59490
+    }
+  ]
+}

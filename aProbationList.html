@@ -1,0 +1,152 @@
+<!DOCTYPE>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>职业岗位大数据申请试用用户</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- element-ui -->
+  <link rel="stylesheet" href="element-ui/index.css">
+  <link rel="stylesheet" href="element-ui/icon.css">
+  <script src="element-ui/vue.js"></script>
+  <script src="element-ui/index.js"></script>
+  
+  <!-- css -->
+  <link href="css/common.css" rel="stylesheet" type="text/css" />
+  
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+
+<style>
+  *{
+    margin: 0;
+    padding: 0;
+  }
+ .container{
+   width:60%;
+   height: 85%;
+   margin:auto
+ }
+</style>
+
+<body>
+  <div id="app">
+    <div class="container">
+       <!-- 表格 -->
+    <el-table :data="tableData" style="width: 100%;margin-top:20px" 
+    v-loading="loading"  element-loading-text="数据加载中"
+    style="width: 100%" size='medium'>
+      <el-table-column prop="time" label="时间" width="200px">
+        <template slot-scope="scope">
+          {{scope.row.PostTime.split('T').join('  ')}}
+        </template>
+      </el-table-column>
+      <el-table-column prop="name" label="名字" width="">
+        <template slot-scope="scope">
+          {{scope.row.Contacts}}
+        </template>
+      </el-table-column>
+      <el-table-column prop="telephone" label="电话" width="">
+        <template slot-scope="scope">
+          {{scope.row.Telephone}}
+        </template>
+      </el-table-column>
+      <el-table-column prop="unit" label="单位" width="">
+        <template slot-scope="scope">
+          {{scope.row.UnitName}}
+        </template>
+      </el-table-column>
+     
+      <el-table-column prop="message" label="留言" width="">
+        <template slot-scope="scope">
+          {{scope.row.Message}}
+        </template>
+      </el-table-column>
+    </el-table>
+
+    <!-- 分页 -->
+    <div class="clearfix">
+      <el-pagination class="fr" background layout="prev, pager, next" :total="Total" :page-size="10"
+        @current-change="pageChange" :current-page="pageIndex"></el-pagination>
+    </div>
+    </div>
+
+
+
+  </div>
+
+</body>
+
+
+<script>
+  
+  const URL = 'http://10.120.147.78'
+  //const URL = 'https://zygw.cnki.net'
+  new Vue({
+    el: '#app',
+    data() {
+      return {
+        tableData:[],
+        pageIndex:1,
+        loading:false,
+        Total:0,
+        lid:''
+      }
+    },
+
+    mounted() {
+      this.lid = this.getCookie('LID')
+      this.getApplyList(1,10)
+    },
+    methods:{
+      /* 获取申请试用的用户信息 */
+      getApplyList(pageIndex,pageSize) {
+        let that = this
+        that.loading = true
+        axios.get(URL + '/jobbigdata/api/Index/GetApplyList', {
+          headers:{'lid':that.lid},
+          params: {
+            pageIndex,
+            pageSize,
+          }
+        })
+          .then(function (res) {
+            that.loading = false
+            if (res.data.Code == 200) {
+              that.tableData = res.data.Data || []
+              that.Total = res.data.Total || 0
+            }
+
+          })
+          .catch(function (error) {
+            that.loading = false
+            alert('获取用户信息错误！')
+          });
+      },
+
+      // 切换页码
+      pageChange(pageIndex){
+        this.getApplyList(pageIndex,10)
+
+      },
+
+      /* 获取cookies的值 */
+      getCookie(name) {
+        var arr, reg = new RegExp("(^| )" + name + "=([^;]*)(;|$)");
+        if (arr = document.cookie.match(reg))
+          return unescape(arr[2]);
+        else
+          return null;
+      },
+    }
+
+   
+
+  })
+</script>
+
+</html>

@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>申请试用</title>
+  <!-- vue -->
+  <script src="./js/vue.js"></script>
+  <!-- <script src="https://cdn.bootcdn.net/ajax/libs/vue/3.0.2/vue.cjs.js"></script> -->
+  <!-- element-ui -->
+  <link rel="stylesheet" href="./element-ui/index.css">
+  <link rel="stylesheet" href="./element-ui/icon.css">
+  <!-- iconfont -->
+  <link rel="stylesheet" href="//at.alicdn.com/t/font_1940690_rb5rdhqbj3p.css">
+  <script src="./element-ui/vue.js"></script>
+  <script src="./element-ui/index.js"></script>
+  <!-- 引入axios -->
+  <script type="text/javascript" src="https://cdn.bootcss.com/axios/0.19.0-beta.1/axios.js"></script>
+  <!-- 引入jQuery -->
+  <script src="https://cdn.staticfile.org/jquery/1.10.2/jquery.min.js"></script>
+</head>
+<style>
+  .probation_container {
+    width: 50vw;
+    background: #FFF;
+    margin: auto;
+    margin-top: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .title {
+    margin: 20px 0;
+    font-weight: normal;
+    font-size: 22px;
+  }
+
+  .demo-ruleForm {
+    text-align: center
+  }
+
+  .submit {
+    margin: 20px 0 20px 50px;
+  }
+
+  .text {
+    color: #606266 ;
+    text-align:left;
+    margin-left: 50px ;
+    font-size:14px
+  }
+  .demo-ruleForm {
+      text-align: center
+    }
+   
+</style>
+
+<body>
+  <div id="app">
+    <div class="probation_container">
+      <h2 class="title">欢迎提交试用申请</h2>
+      <el-form 
+        :model="ruleForm" :rules="rules" ref="ruleForm" 
+        label-width="100px" class="demo-ruleForm" size="medium"
+        style="width: 490px;">
+        <el-form-item label="试用系统" prop="type">
+            <!-- <el-checkbox label="职业岗位大数据服务平台" name="type"></el-checkbox> -->
+            <span class="iconfont icon-circle" style="color:rgb(52, 140, 240);margin-left: -200px;"></span>
+            <span style="font-size: 14px;color: #606266;margin-left: 10px;">职业岗位大数据服务平台</span>
+        </el-form-item>
+
+        <el-form-item label="联系人" prop="name">
+          <el-input v-model.trim="ruleForm.name"></el-input>
+        </el-form-item>
+
+        <el-form-item label="联系电话" prop="phone">
+          <el-input v-model="ruleForm.phone"></el-input>
+        </el-form-item>
+
+        <el-form-item label="单位名称" prop="companyName">
+          <el-input v-model.trim="ruleForm.companyName"></el-input>
+        </el-form-item>
+
+        <el-form-item label="敬请留言" size='medium'>
+          <el-input type="textarea" v-model="ruleForm.message"></el-input>
+        </el-form-item>
+        <el-row class="text" style="font-size: 14px;">快速开通产品试用，请联系：010-62793176</el-row>
+        <br />
+        <el-row class="text" >产品沟通与问题反馈，请联系：010-62969002-8449</el-row>
+        <el-button type="primary" class="submit" @click="handleClick()" :disabled="flag">提交申请</el-button>
+      </el-form>
+
+    </div>
+  </div>
+</body>
+
+<script>
+  const URL = 'http://10.120.147.78'
+ // const URL = 'https://zygw.cnki.net'
+  let v = new Vue({
+    el: '#app',
+    data() {
+      var validatePhone = (rule, value, callback) => {
+        var phone = value.replace(/\s/g, ""); //去除空格
+        //校验手机号，号段主要有(不包括上网卡)：130~139、150~153，155~159，180~189、170~171、176~178。14号段为上网卡专属号段
+        let regs = /^((13[0-9])|(17[0-9])|(15[^4,\\D])|(18[0-9])|(19[0-9]))\d{8}$/;
+        if (value.length == 0) {
+          callback([new Error("请输入手机号")]);
+        } else {
+          if (!regs.test(phone)) {
+            callback([new Error("手机号输入不合法")]);
+          } else {
+            callback();
+          }
+        }
+      };
+
+      return {
+        flag: false,
+        ruleForm: {
+          type: [],
+          name: "",
+          phone: "",
+          companyName: "",
+          message: ""
+        },
+        rules: {
+         
+          name: [
+            { required: true, message: "请输入名字", trigger: "blur" },
+            { min: 1, message: '请输入名字', trigger: 'blur' }
+          ],
+          phone: [
+            { required: true, message: "请输入电话号码", trigger: "blur" },
+            { validator: validatePhone, trigger: "blur" }
+          ],
+          companyName: [
+            { required: true, message: "请输入单位名称", trigger: "blur" },
+            { min: 1, message: '请输入单位名称', trigger: 'blur' }
+          ]
+        }
+      };
+    },
+    methods: {
+      handleClick(e) {
+        let { type, name, phone, companyName } = this.ruleForm;
+        let phoneNum = phone.replace(/\s/g, "");
+        // let regs = /^((13[0-9])|(17[0-1,6-8])|(15[^4,\\D])|(18[0-9]))\d{8}$/;
+        let regs = /^((13[0-9])|(17[0-9])|(15[^4,\\D])|(18[0-9])|(19[0-9]))\d{8}$/;
+
+        if (!regs.test(phoneNum)) {
+          // alert("请正确输入手机号");
+          this.$message({
+            type: "error",
+            message: "请正确输入手机号"
+          })
+          return;
+        }
+       /*  if (!type.join(",")) {
+          this.$message({
+            type: "error",
+            message: "请至少选择一个系统"
+          })
+          return;
+        } */
+        if (!name || !phone || !companyName) {
+          // alert("请正确填写信息");
+          this.$message({
+            type: "error",
+            message: "请正确填写信息"
+          })
+          return;
+        } else {
+          this.addApply();
+          this.flag = true
+          setTimeout(() => {
+            this.flag = false
+          }, 5000)
+        }
+      },
+      addApply() {
+        let that = this
+        axios
+          .post(URL + "/jobbigdata/api/Index/AddApply", {
+            SystemName: '职业岗位大数据服务平台',
+            Contacts: this.ruleForm.name,
+            Telephone: this.ruleForm.phone,
+            UnitName: this.ruleForm.companyName,
+            Message: this.ruleForm.message
+          })
+          .then(() => {
+            // alert("提交成功");
+            this.$message({
+              type: "success",
+              message: "提交成功"
+            })
+            that.type = [];
+            that.name = "";
+            that.phone = "";
+            that.companyName = "";
+            that.message = "";
+          });
+        //   debugger;
+      }
+    },
+    mounted() {
+      $("#app")
+        .find("div")
+        .eq(0)
+        .css("padding-bottom", 0);
+      $("#app")
+        .find("div")
+        .eq(0)
+        .css("overflow", "hidden");
+    }
+
+  })
+
+
+</script>
+
+</html>

@@ -1,0 +1,131 @@
+@charset"UTF-8";
+
+/*
+	姚丽娟
+	2020-10-28
+ */
+
+
+/*--- 通用样式-----*/
+html,
+body,
+div,
+p,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+dl,
+dt,
+dd,
+ol,
+ul,
+li,
+table,
+tbody,
+tfoot,
+thead,
+tr,
+th,
+td, 
+span,
+a,
+img,
+em,
+ins,
+strong,
+b,
+i,
+form,
+input,
+button,
+label{
+    margin: 0;
+    padding: 0;
+}
+html,body{
+    width:100%;
+    height: 100%;
+}
+body {
+    font-family: "微软雅黑";
+    font-size: 14px;
+    color:#333;
+    background-color: #fff;
+}
+ul,
+li,
+ol,
+dt,
+dd,
+dl {
+    list-style: none;
+}
+input,
+button,
+select,
+textarea {
+    outline: 0;
+}
+table {
+    border-collapse: collapse;
+    border-spacing: 0
+}
+img {
+    border: 0;
+    vertical-align: middle;
+}
+em,
+i {
+    font-style: normal;
+}
+ins {
+    text-decoration: none;
+}
+a{
+    text-decoration: none;
+    cursor: pointer;
+}
+a:link,
+a:visited {
+    color: #333;
+}
+.elips{
+    overflow:hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.clearfix:after {
+    visibility: hidden;
+    display: block;
+    font-size: 0;
+    content: " ";
+    clear: both;
+    height: 0;
+}
+
+.clearfix {
+    *zoom: 1;
+}
+
+.fl {
+    float: left;
+}
+
+.fr {
+    float: right;
+}
+.flx{
+    display: -webkit-flex;
+    display: flex;
+    flex-grow: row nowrap;
+    justify-content: flex-start;
+}
+.wrapper{
+    width: 1200px;
+    margin: 0 auto;
+}
+
+
